@@ -16,8 +16,10 @@
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)DataNode.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Queue.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Sockets.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)Queue.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Sockets.cpp" />
   </ItemGroup>
 </Project>

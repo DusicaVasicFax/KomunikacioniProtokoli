@@ -4,6 +4,9 @@
     <Filter Include="Data">
       <UniqueIdentifier>{950e3a85-32cf-43ef-a98c-c72b1f51ec86}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Sockets">
+      <UniqueIdentifier>{a0172fbe-2942-479e-b649-eb59f834464b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)Queue.h">
@@ -12,10 +15,16 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)DataNode.h">
       <Filter>Data</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Sockets.h">
+      <Filter>Sockets</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)Queue.cpp">
       <Filter>Data</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Sockets.cpp">
+      <Filter>Sockets</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

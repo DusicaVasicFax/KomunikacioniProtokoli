@@ -22,7 +22,14 @@ int main(int argc, char** argv) {
 	if (InitializeWindowsSockets() == false)
 		return 1;
 
+	int iResult;
+
+	/*Initalized queue and checked if it initalized correctly*/
 	Queue* queue = NULL;
 	queue = createQueue();
-	//TODO initalize queue
+
+	if (queue == NULL)
+		return 1;
+
+	SOCKET connectSocket = CreateSocketClient(argv[1], atoi(argv[2]), 1);
 }
