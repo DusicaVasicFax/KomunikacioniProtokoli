@@ -1,12 +1,11 @@
 #pragma once
 
-#ifndef DataNode_H
-#define DataNode_H
-
-#include <time.h>
+#ifndef DATA_NODE_H_
+#define DATA_NODE_H_
 
 typedef struct dataNode {
-	char id[1024];
+	int processId;
+	char value[512];
 }DataNode;
 
-#endif //
+#endif 

@@ -4,4 +4,6 @@
 
 DWORD WINAPI clientListeningThread(LPVOID param);
 bool InitializeWindowsSockets();
+
+char* test();
 #endif

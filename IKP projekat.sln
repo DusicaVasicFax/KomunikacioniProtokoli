@@ -3,15 +3,17 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30621.155
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Worker role", "Worker role\Worker role.vcxproj", "{D725C914-0ED9-4868-984B-D4C3CDFBF588}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Common", "Common\Common.vcxproj", "{9556B56A-EE0A-4EC4-9DFB-8D83B3710C87}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Client", "Client\Client.vcxproj", "{9AF3B1C6-F944-46AF-A842-BE1F31AD662E}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Load balancer", "Load balancer\Load balancer.vcxproj", "{EC9732A3-806A-4F42-AFF1-7BBAEA744E61}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Common", "Common\Common.vcxitems", "{06A8CA18-AFB3-4D6E-9D2F-61D8F21B3A90}"
+EndProject
 Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		Common\Common.vcxitems*{06a8ca18-afb3-4d6e-9d2f-61d8f21b3a90}*SharedItemsImports = 9
+		Common\Common.vcxitems*{ec9732a3-806a-4f42-aff1-7bbaea744e61}*SharedItemsImports = 4
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
 		Debug|x86 = Debug|x86
@@ -19,22 +21,6 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{D725C914-0ED9-4868-984B-D4C3CDFBF588}.Debug|x64.ActiveCfg = Debug|x64
-		{D725C914-0ED9-4868-984B-D4C3CDFBF588}.Debug|x64.Build.0 = Debug|x64
-		{D725C914-0ED9-4868-984B-D4C3CDFBF588}.Debug|x86.ActiveCfg = Debug|Win32
-		{D725C914-0ED9-4868-984B-D4C3CDFBF588}.Debug|x86.Build.0 = Debug|Win32
-		{D725C914-0ED9-4868-984B-D4C3CDFBF588}.Release|x64.ActiveCfg = Release|x64
-		{D725C914-0ED9-4868-984B-D4C3CDFBF588}.Release|x64.Build.0 = Release|x64
-		{D725C914-0ED9-4868-984B-D4C3CDFBF588}.Release|x86.ActiveCfg = Release|Win32
-		{D725C914-0ED9-4868-984B-D4C3CDFBF588}.Release|x86.Build.0 = Release|Win32
-		{9556B56A-EE0A-4EC4-9DFB-8D83B3710C87}.Debug|x64.ActiveCfg = Debug|x64
-		{9556B56A-EE0A-4EC4-9DFB-8D83B3710C87}.Debug|x64.Build.0 = Debug|x64
-		{9556B56A-EE0A-4EC4-9DFB-8D83B3710C87}.Debug|x86.ActiveCfg = Debug|Win32
-		{9556B56A-EE0A-4EC4-9DFB-8D83B3710C87}.Debug|x86.Build.0 = Debug|Win32
-		{9556B56A-EE0A-4EC4-9DFB-8D83B3710C87}.Release|x64.ActiveCfg = Release|x64
-		{9556B56A-EE0A-4EC4-9DFB-8D83B3710C87}.Release|x64.Build.0 = Release|x64
-		{9556B56A-EE0A-4EC4-9DFB-8D83B3710C87}.Release|x86.ActiveCfg = Release|Win32
-		{9556B56A-EE0A-4EC4-9DFB-8D83B3710C87}.Release|x86.Build.0 = Release|Win32
 		{9AF3B1C6-F944-46AF-A842-BE1F31AD662E}.Debug|x64.ActiveCfg = Debug|x64
 		{9AF3B1C6-F944-46AF-A842-BE1F31AD662E}.Debug|x64.Build.0 = Debug|x64
 		{9AF3B1C6-F944-46AF-A842-BE1F31AD662E}.Debug|x86.ActiveCfg = Debug|Win32

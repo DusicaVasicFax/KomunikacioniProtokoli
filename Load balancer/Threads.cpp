@@ -45,3 +45,7 @@ bool InitializeWindowsSockets()
 	}
 	return true;
 }
+
+char* test() {
+	return NULL;
+}

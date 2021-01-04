@@ -7,8 +7,8 @@ Queue* createQueue(void)
 
 	if (queue != NULL)
 	{
-		queue->data = (DataNode**)malloc(sizeof(DataNode*) * size);
-		if (queue->data != NULL)
+		queue->entries = (DataNode**)malloc(sizeof(DataNode*) * size);
+		if (queue->entries != NULL)
 		{
 			queue->size = size;
 			queue->head = 0;
@@ -30,7 +30,7 @@ void deleteQueue(Queue* queue)
 {
 	if (queue != NULL)
 	{
-		free(queue->data);
+		free(queue->entries);
 		DeleteCriticalSection(&(queue->criticalSection));
 		free(queue);
 	}
@@ -38,6 +38,39 @@ void deleteQueue(Queue* queue)
 	return;
 }
 
+void resizeQueue(Queue* queue)
+{
+	EnterCriticalSection(&(queue->criticalSection));
+
+	DataNode** temp = (DataNode**)malloc(sizeof(DataNode*) * queue->size * 2);
+
+	if (temp != NULL)
+	{
+		unsigned int i = 0;
+		unsigned int h = queue->head;
+		do {
+			temp[i] = queue->entries[h];
+			h++;
+			if (h == queue->size)
+			{
+				h = 0;
+			}
+
+			i++;
+		} while (h != queue->tail);
+
+		free(queue->entries);
+		queue->entries = temp;
+		queue->head = 0;
+		queue->tail = queue->size;
+		queue->size = queue->size * 2;
+		queue->isFull = false;
+	}
+
+	LeaveCriticalSection(&(queue->criticalSection));
+
+	return;
+}
 
 bool isEmpty(Queue* queue)
 {
@@ -57,7 +90,84 @@ bool isEmpty(Queue* queue)
 	return false;
 }
 
+bool insertInQueue(Queue* queue, DataNode* DataNode)
+{
+	EnterCriticalSection(&(queue->criticalSection));
 
+	bool result;
+
+	if (queue->isFull == true)
+	{
+		resizeQueue(queue);
+		if (queue->isFull == true)
+		{
+			result = false;
+		}
+	}
+
+	if (queue->isFull == false)
+	{
+		queue->entries[queue->tail] = DataNode;
+		queue->tail++;
+
+		if (queue->tail == queue->size)
+		{
+			queue->tail = 0;
+		}
+
+		if (queue->tail == queue->head)
+		{
+			queue->isFull = true;
+		}
+	}
+
+	LeaveCriticalSection(&(queue->criticalSection));
+
+	return true;
+}
+
+DataNode* removeFromQueue(Queue* queue)
+{
+	EnterCriticalSection(&(queue->criticalSection));
+
+	DataNode* DataNode = NULL;
+
+	if (isEmpty(queue) == false)
+	{
+		if (queue->isFull == true)
+		{
+			queue->isFull = false;
+		}
+
+		DataNode = queue->entries[queue->head];
+		queue->head++;
+
+		if (queue->head == queue->size)
+		{
+			queue->head = 0;
+		}
+	}
+
+	LeaveCriticalSection(&(queue->criticalSection));
+
+	return DataNode;
+}
+
+DataNode* lookHead(Queue* queue)
+{
+	EnterCriticalSection(&(queue->criticalSection));
+
+	DataNode* DataNode = NULL;
+
+	if (isEmpty(queue) == false)
+	{
+		DataNode = queue->entries[queue->head];
+	}
+
+	LeaveCriticalSection(&(queue->criticalSection));
+
+	return DataNode;
+}
 
 unsigned int getSize(Queue* queue)
 {
