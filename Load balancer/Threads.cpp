@@ -44,13 +44,16 @@ DWORD WINAPI clientListeningThread(LPVOID param) {
 	{
 		memset(recvbuf, 0, MESSAGE_SIZE);
 		// Receive data until the client shuts down the connection
-		iResult = Recv(acceptSocket, recvbuf);
+		iResult = recv(acceptSocket, recvbuf, 512, 0);
 		if (iResult > 0)
 		{
-			printf("Recevied message from client, proces id=%d\n", *(int*)recvbuf);
-			/*CNode* cNode = Deserialize(recvbuf);
-			if (insertInQueue(parameters->queue, cNode) == false)*/
-			puts("Error inserting in queue");
+			printf("Message received from client: %s.\n", recvbuf);
+			//TODO serilize and desirilazie data
+			DataNode* newNode = (DataNode*)malloc(sizeof(DataNode));
+			newNode->value = recvbuf;
+			newNode->processId = 5;
+			if (insertInQueue(parameters->queue, newNode) == false)
+				puts("Error inserting in queue");
 		}
 		else if (iResult == 0)
 		{

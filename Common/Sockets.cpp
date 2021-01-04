@@ -15,56 +15,35 @@ bool InitializeWindowsSockets()
 	return true;
 }
 
-int Recv(SOCKET s, char* recvbuffer)
+int Recv(SOCKET s, char* recvbuf)
 {
-	int count = 0;
-	char* countBuffer = (char*)malloc(sizeof(int));
+	int iResult;
 
-	while (count < sizeof(int))
+	do
 	{
-		int iResult = Select(s, true);
-		iResult = recv(s, countBuffer + count, sizeof(int) - count, 0);
-		if (iResult < 0)
+		iResult = Select(s, true);
+
+		// Receive data until the client shuts down the connection
+		iResult = recv(s, recvbuf, 512, 0);
+
+		if (iResult > 0)
 		{
-			return iResult;
+			printf("Message received from client: %s.\n", recvbuf);
 		}
 		else if (iResult == 0)
 		{
-			return iResult;
+			// connection was closed gracefully
+			printf("Connection with client closed.\n");
+			closesocket(s);
 		}
 		else
 		{
-			count += iResult;
+			// there was an error during recv
+			printf("recv failed with error: %d\n", WSAGetLastError());
+			closesocket(s);
 		}
-	}
-
-	int msgSize = *((int*)countBuffer);
-	free(countBuffer);
-
-	printf("Message size: %d\n", msgSize);
-
-	count = 0;
-
-	while (count < msgSize)
-	{
-		int iResult = Select(s, true);
-		iResult = recv(s, recvbuffer + count, msgSize - count, 0);
-
-		if (iResult < 0)
-		{
-			return iResult;
-		}
-		else if (iResult == 0)
-		{
-			return iResult;
-		}
-		else
-		{
-			count += iResult;
-		}
-	}
-
-	return count;
+	} while (iResult > 0);
+	return 1;
 }
 
 int Select(SOCKET s, bool receiving)

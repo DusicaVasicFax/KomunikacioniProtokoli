@@ -5,7 +5,7 @@
 
 typedef struct dataNode {
 	int processId;
-	char value[512];
+	char* value;
 }DataNode;
 
 #endif 
