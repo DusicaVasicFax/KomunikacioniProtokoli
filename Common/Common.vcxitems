@@ -16,6 +16,7 @@
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)DataNode.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Queue.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ReceiveAndSendModel.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Sockets.h" />
   </ItemGroup>
   <ItemGroup>

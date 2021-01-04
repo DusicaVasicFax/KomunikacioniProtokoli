@@ -18,6 +18,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Sockets.h">
       <Filter>Sockets</Filter>
     </ClInclude>
+    <ClInclude Include="C:\Users\krist\Desktop\KomunikacioniProtokoli\Common\ReceiveAndSendModel.h">
+      <Filter>Data</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)Queue.cpp">

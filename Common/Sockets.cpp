@@ -2,6 +2,19 @@
 
 #include "Sockets.h"
 
+bool InitializeWindowsSockets()
+{
+	WSADATA wsaData;
+	// Initialize windows sockets library for this process
+	int iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
+	if (iResult != 0)
+	{
+		printf("WSAStartup failed with error: %d\n", iResult);
+		return false;
+	}
+	return true;
+}
+
 int Recv(SOCKET s, char* recvbuffer)
 {
 	int count = 0;

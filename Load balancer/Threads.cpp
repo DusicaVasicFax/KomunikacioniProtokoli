@@ -4,48 +4,77 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include "Thread_declarations.h"
+#include "Sockets.h"
+#include "ReceiveAndSendModel.h"
 
-#define DEFAULT_BUFLEN 512
-#define MAX_CLIENTS 10
-#define SERVER_PORT 15000
-#define SERVER_SLEEP_TIME 50
-#define ACCESS_BUFFER_SIZE 1024
-#define IP_ADDRESS_LEN 16
+#define MESSAGE_SIZE sizeof(DataNode)
 
 DWORD WINAPI clientListeningThread(LPVOID param) {
-	// Socket used for listening for new clients
-	SOCKET listenSocket = INVALID_SOCKET;
-	// Socket used for communication with client
-	SOCKET acceptedSocket = INVALID_SOCKET;
-	// variable used to store function return value
-	int iResult;
-	// Buffer used for storing incoming data
-	char recvbuf[DEFAULT_BUFLEN];
+	ReceiveParameters* parameters = (ReceiveParameters*)param;
 
-	SOCKET clientSockets[MAX_CLIENTS];
-	short lastIndex = 0;
-
-	if (InitializeWindowsSockets() == false)
+	SOCKET acceptSocket = accept(*(parameters->listenSocket), NULL, NULL);
+	if (acceptSocket == INVALID_SOCKET)
 	{
-		// we won't log anything since it will be logged
-		// by InitializeWindowsSockets() function
+		printf("accept failed with error: %d\n", WSAGetLastError());
+		closesocket(*(parameters->listenSocket));
+		WSACleanup();
 		return 1;
 	}
-}
 
-bool InitializeWindowsSockets()
-{
-	WSADATA wsaData;
-	// Initialize windows sockets library for this process
-	int iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
-	if (iResult != 0)
+	unsigned long int nonBlockingMode = 1;
+	int iResult = ioctlsocket(acceptSocket, FIONBIO, &nonBlockingMode);
+	if (iResult == SOCKET_ERROR)
 	{
-		printf("WSAStartup failed with error: %d\n", iResult);
-		return false;
+		printf("ioctlsocket failed with error: %ld\n", WSAGetLastError());
+		return 1;
 	}
-	return true;
-}
 
-char* test() {
-	return NULL;
+	char* recvbuf = (char*)malloc(MESSAGE_SIZE);
+
+	iResult = Select(acceptSocket, 0);
+	if (iResult == -1)
+	{
+		fprintf(stderr, "select failed with error: %ld\n", WSAGetLastError());
+		closesocket(acceptSocket);
+		WSACleanup();
+		return 1;
+	}
+
+	do
+	{
+		memset(recvbuf, 0, MESSAGE_SIZE);
+		// Receive data until the client shuts down the connection
+		iResult = Recv(acceptSocket, recvbuf);
+		if (iResult > 0)
+		{
+			printf("Recevied message from client, proces id=%d\n", *(int*)recvbuf);
+			/*CNode* cNode = Deserialize(recvbuf);
+			if (insertInQueue(parameters->queue, cNode) == false)*/
+			puts("Error inserting in queue");
+		}
+		else if (iResult == 0)
+		{
+			// connection was closed gracefully
+			printf("Connection with client closed.\n");
+			closesocket(acceptSocket);
+		}
+		else
+		{
+			// there was an error during recv
+			if (WSAGetLastError() == WSAEWOULDBLOCK)
+			{
+				iResult = 1;
+				continue;
+			}
+			else
+			{
+				printf("recv failed with error: %d\n", WSAGetLastError());
+				closesocket(acceptSocket);
+			}
+		}
+	} while (iResult > 0);
+
+	free(recvbuf);
+
+	return 0;
 }

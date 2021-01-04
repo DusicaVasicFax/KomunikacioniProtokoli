@@ -5,7 +5,8 @@
 #include <conio.h>
 #include "Thread_declarations.h"
 #include "Queue.h"
-
+#include "Sockets.h"
+#include "ReceiveAndSendModel.h"
 #include <winsock2.h>
 
 #pragma comment(lib,"ws2_32.lib")
@@ -31,5 +32,40 @@ int main(int argc, char** argv) {
 	if (queue == NULL)
 		return 1;
 
-	SOCKET connectSocket = CreateSocketClient(argv[1], atoi(argv[2]), 1);
+	SOCKET listenSocketServer = CreateSocketServer((char*)"27016", 1);
+	iResult = listen(listenSocketServer, SOMAXCONN);
+	if (iResult == SOCKET_ERROR)
+	{
+		printf("listen failed with error: %d\n", WSAGetLastError());
+		closesocket(listenSocketServer);
+		WSACleanup();
+		return 1;
+	}
+
+	printf("Load balancer has succesfully started");
+
+	while (1)
+	{
+		iResult = Select(listenSocketServer, 1);
+		if (iResult == SOCKET_ERROR)
+		{
+			fprintf(stderr, "select failed with error: %ld\n", WSAGetLastError());
+			getchar();
+			return 1;
+		}
+
+		ReceiveParameters parameters;
+		parameters.listenSocket = &listenSocketServer;
+		parameters.queue = queue;
+
+		DWORD clientListeningThreadId;
+		CreateThread(NULL, 0, &clientListeningThread, &parameters, 0, &clientListeningThreadId);
+		Sleep(500);
+	}
+
+	closesocket(listenSocketServer);
+	deleteQueue(queue);
+	WSACleanup();
+
+	getchar();
 }
