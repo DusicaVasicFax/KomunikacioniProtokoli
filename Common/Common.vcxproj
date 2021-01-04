@@ -19,11 +19,13 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Functions.cpp" />
     <ClCompile Include="List.cpp" />
     <ClCompile Include="Queue.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DataNode.h" />
+    <ClInclude Include="Functions.h" />
     <ClInclude Include="Queue.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
