@@ -139,7 +139,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="LoadBalancer.c" />
+    <ClCompile Include="LoadBalancer.cpp" />
+    <ClCompile Include="Threads.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Thread_declarations.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
