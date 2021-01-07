@@ -3,5 +3,6 @@
 #include <ws2tcpip.h>
 
 DWORD WINAPI clientListeningThread(LPVOID param);
+DWORD WINAPI dispatcher(LPVOID param);
 
 #endif

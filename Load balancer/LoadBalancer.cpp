@@ -59,7 +59,10 @@ int main(int argc, char** argv) {
 		parameters.queue = queue;
 
 		DWORD clientListeningThreadId;
+		DWORD dispatcherThreadId;
 		CreateThread(NULL, 0, &clientListeningThread, &parameters, 0, &clientListeningThreadId);
+		CreateThread(NULL, 0, &dispatcher, &parameters, 0, &dispatcherThreadId);
+
 		Sleep(500);
 	}
 

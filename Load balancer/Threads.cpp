@@ -81,3 +81,10 @@ DWORD WINAPI clientListeningThread(LPVOID param) {
 
 	return 0;
 }
+
+DWORD WINAPI dispatcher(LPVOID param) {
+	while (1) {
+		printf("Thread started\n");
+		Sleep(1000);
+	}
+}

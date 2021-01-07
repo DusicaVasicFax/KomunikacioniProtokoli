@@ -12,15 +12,14 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Queue.h">
       <Filter>Data</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)DataNode.h">
-      <Filter>Data</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)Sockets.h">
       <Filter>Sockets</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\krist\Desktop\KomunikacioniProtokoli\Common\ReceiveAndSendModel.h">
+    <ClInclude Include="$(MSBuildThisFileDirectory)ReceiveAndSendModel.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)List.h">
       <Filter>Data</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Data.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)Queue.cpp">
@@ -28,6 +27,9 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Sockets.cpp">
       <Filter>Sockets</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)List.cpp">
+      <Filter>Data</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -18,7 +18,6 @@ int __cdecl main(int argc, char** argv)
 	// variable used to store function return value
 	int iResult;
 	// message to send
-	char* messageToSend = (char*)"this is a test";
 
 	if (InitializeWindowsSockets() == false)
 	{
@@ -51,17 +50,24 @@ int __cdecl main(int argc, char** argv)
 		closesocket(connectSocket);
 		WSACleanup();
 	}
+	while (1) {
+		/*char line[1024];
 
-	// Send an prepared message with null terminator included
-	iResult = send(connectSocket, messageToSend, (int)strlen(messageToSend) + 1, 0);
+		scanf("%1023[^\n]", line);*/
+		char* messageToSend = (char*)"this is a test";
 
-	if (iResult == SOCKET_ERROR)
-	{
-		printf("send failed with error: %d\n", WSAGetLastError());
-		closesocket(connectSocket);
-		WSACleanup();
-		return 1;
+		iResult = send(connectSocket, messageToSend, (int)strlen(messageToSend) + 1, 0);
+
+		if (iResult == SOCKET_ERROR)
+		{
+			printf("send failed with error: %d\n", WSAGetLastError());
+			closesocket(connectSocket);
+			WSACleanup();
+			return 1;
+		}
+		Sleep(5000);
 	}
+	// Send an prepared message with null terminator included
 
 	printf("Bytes Sent: %ld\n", iResult);
 	_getch();

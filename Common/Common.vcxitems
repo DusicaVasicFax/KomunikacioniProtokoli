@@ -14,12 +14,14 @@
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(MSBuildThisFileDirectory)DataNode.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Data.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)List.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Queue.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ReceiveAndSendModel.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Sockets.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)List.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Queue.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Sockets.cpp" />
   </ItemGroup>
