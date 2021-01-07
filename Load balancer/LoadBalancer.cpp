@@ -7,11 +7,12 @@
 #include "Queue.h"
 #include "Sockets.h"
 #include "ReceiveAndSendModel.h"
+#include "List.h"
 #include <winsock2.h>
 
 #pragma comment(lib,"ws2_32.lib")
 
-#define SERVER_PORT 15000
+#define SERVER_PORT "5059"
 #define SERVER_SLEEP_TIME 50
 #define ACCESS_BUFFER_SIZE 1024
 #define IP_ADDRESS_LEN 16
@@ -29,10 +30,12 @@ int main(int argc, char** argv) {
 	Queue* queue = NULL;
 	queue = createQueue();
 
-	if (queue == NULL)
+	List* list = NULL;
+	list = createList();
+	if (queue == NULL || list == NULL)
 		return 1;
 
-	SOCKET listenSocketServer = CreateSocketServer((char*)"27016", 1);
+	SOCKET listenSocketServer = CreateSocketServer((char*)SERVER_PORT, 1);
 	iResult = listen(listenSocketServer, SOMAXCONN);
 	if (iResult == SOCKET_ERROR)
 	{
@@ -54,14 +57,19 @@ int main(int argc, char** argv) {
 			return 1;
 		}
 
-		ReceiveParameters parameters;
-		parameters.listenSocket = &listenSocketServer;
-		parameters.queue = queue;
+		ReceiveParameters listeningThreadParams;
+		listeningThreadParams.listenSocket = &listenSocketServer;
+		listeningThreadParams.queue = queue;
+		listeningThreadParams.list = list;
+
+		ReceiveParameters dispatcherParams;
+		dispatcherParams.queue = queue;
+		dispatcherParams.list = list;
 
 		DWORD clientListeningThreadId;
 		DWORD dispatcherThreadId;
-		CreateThread(NULL, 0, &clientListeningThread, &parameters, 0, &clientListeningThreadId);
-		CreateThread(NULL, 0, &dispatcher, &parameters, 0, &dispatcherThreadId);
+		CreateThread(NULL, 0, &clientListeningThread, &listeningThreadParams, 0, &clientListeningThreadId);
+		CreateThread(NULL, 0, &dispatcher, &dispatcherParams, 0, &dispatcherThreadId);
 
 		Sleep(500);
 	}

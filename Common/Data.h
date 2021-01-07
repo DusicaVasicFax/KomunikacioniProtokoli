@@ -8,11 +8,11 @@ typedef struct dataNode {
 	char* value;
 }DataNode;
 
-typedef struct node {
+typedef struct listNode {
 	char* ipAddress;
 	char* listeningPort;
 	int active;
-	struct node* next;
-} node_t;
+	struct listNode* next;
+} List;
 
 #endif 

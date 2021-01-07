@@ -5,13 +5,13 @@
 #include <stdbool.h>
 #include "Thread_declarations.h"
 #include "Sockets.h"
+#include "List.h"
 #include "ReceiveAndSendModel.h"
 
 #define MESSAGE_SIZE sizeof(DataNode)
 
 DWORD WINAPI clientListeningThread(LPVOID param) {
 	ReceiveParameters* parameters = (ReceiveParameters*)param;
-
 	SOCKET acceptSocket = accept(*(parameters->listenSocket), NULL, NULL);
 	if (acceptSocket == INVALID_SOCKET)
 	{
@@ -83,6 +83,8 @@ DWORD WINAPI clientListeningThread(LPVOID param) {
 }
 
 DWORD WINAPI dispatcher(LPVOID param) {
+	ReceiveParameters* parameters = (ReceiveParameters*)param;
+	print_list(parameters->list);
 	while (1) {
 		printf("Thread started\n");
 		Sleep(1000);

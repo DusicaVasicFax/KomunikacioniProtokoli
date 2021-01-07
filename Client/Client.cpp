@@ -9,7 +9,7 @@
 #include <conio.h>
 #include "Sockets.h"
 #define DEFAULT_BUFLEN 512
-#define DEFAULT_PORT 27016
+#define DEFAULT_PORT 5059
 
 int __cdecl main(int argc, char** argv)
 {

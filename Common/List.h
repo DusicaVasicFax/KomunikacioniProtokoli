@@ -7,9 +7,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-void print_list(node_t* head);
-void pushToEnd(node_t* head, char* ipAddress, char* listeningPort, int active);
-void pushToBeginning(node_t** head, char* ipAddress, char* listeningPort, int active) {}
-void freeList(node_t* head);
-//int searchList(node_t* head, int value);
+void print_list(List* head);
+void pushToBeginning(List** head, char* ipAddress, char* listeningPort, int active);
+void freeList(List* head);
+List* createList(void);
+List* getFirstAvailable(List* head);
 #endif

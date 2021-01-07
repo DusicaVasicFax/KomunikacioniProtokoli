@@ -1,7 +1,7 @@
 #include "List.h"
 
-void print_list(node_t* head) {
-	node_t* current = head;
+void print_list(List* head) {
+	List* current = head;
 	while (current != NULL) {
 		printf("Ip address: %s\n", current->ipAddress);
 		printf("Port: %s\n", current->listeningPort);
@@ -10,20 +10,9 @@ void print_list(node_t* head) {
 		current = current->next;
 	}
 }
-void pushToEnd(node_t* head, char* ipAddress, char* listeningPort, int active) {
-	node_t* current = head;
-	while (current->next != NULL) {
-		current = current->next; //loop through the list until we get to the end
-	}
 
-	current->next = (node_t*)malloc(sizeof(node_t));
-	current->ipAddress = ipAddress;
-	current->listeningPort = listeningPort;
-	current->active = active;
-	current->next->next = NULL;
-}
-void pushToBeginning(node_t** head, char* ipAddress, char* listeningPort, int active) {
-	node_t* newNode = (node_t*)malloc(sizeof(node_t));
+void pushToBeginning(List** head, char* ipAddress, char* listeningPort, int active) {
+	List* newNode = (List*)malloc(sizeof(List));
 
 	newNode->next = *head; //original head pointer
 	*head = newNode; //switch the two pointers
@@ -31,19 +20,33 @@ void pushToBeginning(node_t** head, char* ipAddress, char* listeningPort, int ac
 	newNode->listeningPort = listeningPort;
 	newNode->active = active;
 }
-void freeList(node_t* head) {
+
+void freeList(List* head) {
 	while (head != NULL) {
-		node_t* temp = head;
+		List* temp = head;
 		head = head->next;
 		free(temp);
 	}
 }
-int getFirstAvailable(node_t* head) {
-	node_t* current = head;
+
+List* createList(void) {
+	List* list = (List*)malloc(sizeof(List));
+
+	if (list != NULL) {
+		list->active = 0;
+		list->ipAddress = (char*)"testIpAddress";
+		list->listeningPort = (char*)"testListeningPort";
+		list->next = NULL;
+		//add to beginning other ip addresses
+	}
+	return list;
+}
+
+List* getFirstAvailable(List* head) {
+	List* current = head;
 	while (current != NULL) {
-		if (current->active == 0)
-			return 1; //TODO return IP address and port
+		if (current->active == 0) return current;
 		current = current->next;
 	}
-	return -1;
+	return NULL;
 }
