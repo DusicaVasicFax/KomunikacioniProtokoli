@@ -37,7 +37,10 @@ List* createList(void) {
 		list->ipAddress = (char*)"testIpAddress";
 		list->listeningPort = (char*)"testListeningPort";
 		list->next = NULL;
-		//add to beginning other ip addresses
+
+		pushToBeginning(&list, (char*)"192.168.0.1", (char*)"25506", 0);
+		pushToBeginning(&list, (char*)"192.168.0.2", (char*)"25507", 0);
+		pushToBeginning(&list, (char*)"192.168.0.3", (char*)"25508", 0);
 	}
 	return list;
 }
