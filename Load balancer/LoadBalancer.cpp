@@ -35,6 +35,16 @@ int main(int argc, char** argv) {
 	if (queue == NULL || list == NULL)
 		return 1;
 
+	ReceiveParameters dispatcherParams;
+	dispatcherParams.queue = queue;
+	dispatcherParams.list = list;
+	DWORD dispatcherThreadId;
+
+	CreateThread(NULL, 0, &dispatcher, &dispatcherParams, 0, &dispatcherThreadId);
+
+	DWORD workerRole1Id;
+	CreateThread(NULL, 0, &workerRole1, &dispatcherParams, 0, &workerRole1Id);
+
 	SOCKET listenSocketServer = CreateSocketServer((char*)SERVER_PORT, 1);
 	iResult = listen(listenSocketServer, SOMAXCONN);
 	if (iResult == SOCKET_ERROR)
@@ -62,14 +72,9 @@ int main(int argc, char** argv) {
 		listeningThreadParams.queue = queue;
 		listeningThreadParams.list = list;
 
-		ReceiveParameters dispatcherParams;
-		dispatcherParams.queue = queue;
-		dispatcherParams.list = list;
-
 		DWORD clientListeningThreadId;
-		DWORD dispatcherThreadId;
+
 		CreateThread(NULL, 0, &clientListeningThread, &listeningThreadParams, 0, &clientListeningThreadId);
-		CreateThread(NULL, 0, &dispatcher, &dispatcherParams, 0, &dispatcherThreadId);
 
 		Sleep(500);
 	}
