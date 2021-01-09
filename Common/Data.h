@@ -15,4 +15,10 @@ typedef struct listNode {
 	struct listNode* next;
 } List;
 
+typedef struct workerRole
+{
+	char* value;
+	char* port;
+}WorkerRoleData;
+
 #endif 

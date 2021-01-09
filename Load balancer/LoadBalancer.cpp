@@ -42,9 +42,6 @@ int main(int argc, char** argv) {
 
 	CreateThread(NULL, 0, &dispatcher, &dispatcherParams, 0, &dispatcherThreadId);
 
-	DWORD workerRole1Id;
-	CreateThread(NULL, 0, &workerRole1, &dispatcherParams, 0, &workerRole1Id);
-
 	SOCKET listenSocketServer = CreateSocketServer((char*)SERVER_PORT, 1);
 	iResult = listen(listenSocketServer, SOMAXCONN);
 	if (iResult == SOCKET_ERROR)
