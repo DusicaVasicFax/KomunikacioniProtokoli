@@ -50,23 +50,23 @@ int __cdecl main(int argc, char** argv)
 		closesocket(connectSocket);
 		WSACleanup();
 	}
-	while (1) {
+	//while (1) {
 		/*char line[1024];
 
 		scanf("%1023[^\n]", line);*/
-		char* messageToSend = (char*)"this is a test";
+	char* messageToSend = (char*)"this is a test";
 
-		iResult = send(connectSocket, messageToSend, (int)strlen(messageToSend) + 1, 0);
+	iResult = send(connectSocket, messageToSend, (int)strlen(messageToSend) + 1, 0);
 
-		if (iResult == SOCKET_ERROR)
-		{
-			printf("send failed with error: %d\n", WSAGetLastError());
-			closesocket(connectSocket);
-			WSACleanup();
-			return 1;
-		}
-		Sleep(5000);
+	if (iResult == SOCKET_ERROR)
+	{
+		printf("send failed with error: %d\n", WSAGetLastError());
+		closesocket(connectSocket);
+		WSACleanup();
+		return 1;
 	}
+	Sleep(5000);
+	//}
 	// Send an prepared message with null terminator included
 
 	printf("Bytes Sent: %ld\n", iResult);
