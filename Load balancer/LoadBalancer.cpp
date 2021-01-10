@@ -20,10 +20,8 @@
 
 #define SAFE_DELETE_HANDLE(a) if(a){CloseHandle(a);}
 
-int main(int argc, char** argv) 
+int main(int argc, char** argv)
 {
-
-
 	if (InitializeWindowsSockets() == false)
 		return 1;
 
@@ -55,8 +53,8 @@ int main(int argc, char** argv)
 	responseParams.queue = recQueue;
 	DWORD responseThreadId;
 
-	CreateThread(NULL, 0, &dispatcher, &dispatcherParams, 0, &dispatcherThreadId);
-	CreateThread(NULL, 0, &response, &responseParams, 0, &responseThreadId);
+	/*CreateThread(NULL, 0, &dispatcher, &dispatcherParams, 0, &dispatcherThreadId);
+	CreateThread(NULL, 0, &response, &responseParams, 0, &responseThreadId);*/
 
 	SOCKET listenSocketServer = CreateSocketServer((char*)SERVER_PORT, 1);
 	iResult = listen(listenSocketServer, SOMAXCONN);
@@ -68,26 +66,26 @@ int main(int argc, char** argv)
 		return 1;
 	}
 
-	printf("Load balancer has succesfully started");
+	printf("Load balancer has succesfully started\n");
+
+	ReceiveParameters listeningThreadParams;
+	listeningThreadParams.listenSocket = &listenSocketServer;
+	listeningThreadParams.queue = queue;
+	listeningThreadParams.list = list;
+
+	DWORD clientListeningThreadId;
+
+	CreateThread(NULL, 0, &clientListeningThread, &listeningThreadParams, 0, &clientListeningThreadId);
 
 	while (1)
 	{
-		iResult = Select(listenSocketServer, 1);
+		/*iResult = Select(listenSocketServer, 1);
 		if (iResult == SOCKET_ERROR)
 		{
-			fprintf(stderr, "select failed with error: %ld\n", WSAGetLastError());
+			fprintf(stderr, "select failed in load balancer with error: %ld\n", WSAGetLastError());
 			getchar();
 			return 1;
-		}
-
-		ReceiveParameters listeningThreadParams;
-		listeningThreadParams.listenSocket = &listenSocketServer;
-		listeningThreadParams.queue = queue;
-		listeningThreadParams.list = list;
-
-		DWORD clientListeningThreadId;
-
-		CreateThread(NULL, 0, &clientListeningThread, &listeningThreadParams, 0, &clientListeningThreadId);
+		}*/
 
 		Sleep(500);
 	}

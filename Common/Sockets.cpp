@@ -111,7 +111,7 @@ SOCKET CreateSocketServer(char* port, unsigned long int mode)
 	iResult = bind(listenSocket, resultingAddress->ai_addr, (int)resultingAddress->ai_addrlen);
 	if (iResult == SOCKET_ERROR)
 	{
-		printf("bind failed with error: %d\n", WSAGetLastError());
+		printf("bind failed  in create server socket with error: %d\n", WSAGetLastError());
 		freeaddrinfo(resultingAddress);
 		closesocket(listenSocket);
 		WSACleanup();
@@ -132,7 +132,7 @@ SOCKET CreateSocketClient(char* adress, int port, unsigned long int mode)
 		IPPROTO_TCP);
 	if (connectSocket == INVALID_SOCKET)
 	{
-		printf("socket failed with error: %ld\n", WSAGetLastError());
+		printf("socket failed in create client socket with error: %ld\n", WSAGetLastError());
 		WSACleanup();
 		return 1;
 	}
