@@ -53,8 +53,8 @@ int main(int argc, char** argv)
 	responseParams.queue = recQueue;
 	DWORD responseThreadId;
 
-	/*CreateThread(NULL, 0, &dispatcher, &dispatcherParams, 0, &dispatcherThreadId);
-	CreateThread(NULL, 0, &response, &responseParams, 0, &responseThreadId);*/
+	CreateThread(NULL, 0, &dispatcher, &dispatcherParams, 0, &dispatcherThreadId);
+	CreateThread(NULL, 0, &response, &responseParams, 0, &responseThreadId);
 
 	SOCKET listenSocketServer = CreateSocketServer((char*)SERVER_PORT, 1);
 	iResult = listen(listenSocketServer, SOMAXCONN);

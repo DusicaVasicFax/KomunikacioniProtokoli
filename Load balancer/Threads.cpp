@@ -16,7 +16,6 @@ DWORD WINAPI clientListeningThread(LPVOID param) {
 	printf("Client listening thread initialized... waiting for client to connect\n\n");
 	int iResult;
 	SOCKET listenSocket = *(parameters->listenSocket);
-	SOCKET acceptedSocket = INVALID_SOCKET;
 	unsigned long int nonBlockingMode = 1;
 
 	SOCKET clientSockets[MAX_CLIENTS];
@@ -183,7 +182,7 @@ DWORD WINAPI dispatcher(LPVOID param) {
 			current->id;
 
 			WorkerRoleData data;
-			data.port = current->listeningPort; //port worker role
+			data.port = (char*)"25506"; //port worker role
 			data.value = node->value; //poruka
 #pragma endregion
 
@@ -191,7 +190,7 @@ DWORD WINAPI dispatcher(LPVOID param) {
 			ReceiveThreadParams receiveParams;
 
 			receiveParams.receiveQueue = parameters->recQueue;
-			receiveParams.port = current->listeningPort;
+			receiveParams.port = (char*)"25506";
 			receiveParams.clientSocket = node->socket;
 
 			HANDLE receive, worker;
@@ -229,10 +228,8 @@ DWORD WINAPI workerRole(LPVOID param)
 		//WSACleanup();
 		return 1;
 	}
-	//Sleep(5000);
-
-	printf("Bytes Sent: %ld\n", iResult);
 	closesocket(connectSocket);
+	printf("Worker should close\n");
 	return 0;
 }
 
@@ -245,7 +242,8 @@ DWORD WINAPI receiveThread(LPVOID param) {
 	SOCKET acceptedSocket = INVALID_SOCKET;
 
 	int iResult;
-	char recvbuf[MESSAGE_SIZE];
+	char* recvbuf = (char*)malloc(MESSAGE_SIZE);
+	memset(recvbuf, 0, MESSAGE_SIZE);
 	iResult = listen(listenSocket, SOMAXCONN);
 	if (iResult == SOCKET_ERROR)
 	{
@@ -257,68 +255,47 @@ DWORD WINAPI receiveThread(LPVOID param) {
 
 	printf("Receiving thread started\n");
 
-	do
+	acceptedSocket = accept(listenSocket, NULL, NULL);
+
+	if (acceptedSocket == INVALID_SOCKET)
 	{
-		// Wait for clients and accept client connections.
-		// Returning value is acceptedSocket used for further
-		// Client<->Server communication. This version of
-		// server will handle only one client.
-		acceptedSocket = accept(listenSocket, NULL, NULL);
-
-		if (acceptedSocket == INVALID_SOCKET)
-		{
-			printf("accept failed in receiveThread with error: %d\n", WSAGetLastError());
-			closesocket(listenSocket);
-			//WSACleanup();
-			return 1;
-		}
-
-		// Receive data until the client shuts down the connection
-		iResult = recv(acceptedSocket, recvbuf, MESSAGE_SIZE, 0);
-		if (iResult > 0)
-		{
-			printf("Message received from worker: %s.\n", recvbuf);
-			DataNode* newNode = (DataNode*)malloc(sizeof(DataNode));
-			newNode->value = recvbuf;
-			newNode->socket = parameters->clientSocket;
-
-			if (!insertInQueue(parameters->receiveQueue, newNode))
-			{
-				printf("Error inserting in receive queue\n");
-			}
-			else
-				printf("Added to response queue\n");
-		}
-		else if (iResult == 0)
-		{
-			// connection was closed gracefully
-			printf("Connection with client closed.\n");
-			closesocket(acceptedSocket);
-		}
-		else
-		{
-			// there was an error during recv
-			printf("recv failed in receiveThread with error: %d\n", WSAGetLastError());
-			closesocket(acceptedSocket);
-		}
-		//printf("Client should have shutted down connection");
-	} while (1);
-
-	// shutdown the connection since we're done
-	iResult = shutdown(listenSocket, SD_SEND);
-	if (iResult == SOCKET_ERROR)
-	{
-		printf("shutdown failed in receiveThread with error: %d\n", WSAGetLastError());
+		printf("accept failed in receiveThread with error: %d\n", WSAGetLastError());
 		closesocket(listenSocket);
 		//WSACleanup();
 		return 1;
 	}
 
-	// cleanup
-	closesocket(listenSocket);
-	//closesocket(acceptedSocket);
-	//WSACleanup();
+	// Receive data until the client shuts down the connection
+	iResult = recv(acceptedSocket, recvbuf, MESSAGE_SIZE, 0);
+	if (iResult > 0)
+	{
+		printf("Message received from worker: %s.\n", recvbuf);
+		DataNode* newNode = (DataNode*)malloc(sizeof(DataNode));
+		newNode->value = recvbuf;
+		newNode->socket = parameters->clientSocket;
 
+		if (!insertInQueue(parameters->receiveQueue, newNode))
+		{
+			printf("Error inserting in receive queue\n");
+		}
+		else
+			printf("Added to response queue\n");
+	}
+	else if (iResult == 0)
+	{
+		// connection was closed gracefully
+		printf("Connection with client closed.\n");
+		closesocket(acceptedSocket);
+	}
+	else
+	{
+		// there was an error during recv
+		printf("recv failed in receiveThread with error: %d\n", WSAGetLastError());
+		closesocket(acceptedSocket);
+	}
+
+	closesocket(listenSocket);
+	printf("recive thread finished\n");
 	return 0;
 }
 
@@ -340,7 +317,7 @@ DWORD WINAPI response(LPVOID param)
 
 			removeFromQueue(parameters->queue);
 
-			printf("%s", node->value);
+			printf("Got it from the response queue... sending to client... please wait: %s\n\n", node->value);
 
 			SOCKET connectSocket = *(node->socket);
 			// variable used to store function return value
@@ -355,11 +332,7 @@ DWORD WINAPI response(LPVOID param)
 				//WSACleanup();
 				return 1;
 			}
-			Sleep(5000);
-
-			//printf("Bytes Sent: %ld\n", iResult);
-			//closesocket(connectSocket);
-			return 0;
-		}Sleep(1000);
+		}
 	}
+	return 0;
 }
