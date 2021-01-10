@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <conio.h>
 #include "Thread_declarations.h"
 #include "Sockets.h"
 #include "List.h"
@@ -10,6 +11,7 @@
 
 #define MESSAGE_SIZE sizeof(DataNode)
 #define DEFAULT_BUFLEN 512
+
 DWORD WINAPI clientListeningThread(LPVOID param) {
 	ReceiveParameters* parameters = (ReceiveParameters*)param;
 	SOCKET acceptSocket = accept(*(parameters->listenSocket), NULL, NULL);
@@ -140,113 +142,100 @@ DWORD WINAPI workerRole(LPVOID param)
 {
 	WorkerRoleData* parameters = (WorkerRoleData*)param;
 
-	SOCKET workerSocket = CreateSocketClient((char*)"127.0.0.1", atoi(parameters->port), 1);
+	SOCKET connectSocket = CreateSocketClient((char*)"127.0.0.1", atoi(parameters->port), 0);
+	// variable used to store function return value
+	int iResult;
+	char* messageToSend = (char*)"this is a test";
 
-	//TODO change the sleep number later
-	printf("Worker role succesfully started..");
-
-	char* messageToSend = parameters->value;
-	// Send an prepared message with null terminator included
-	int iResult = send(workerSocket, messageToSend, (int)strlen(messageToSend) + 1, 0);
+	iResult = send(connectSocket, messageToSend, (int)strlen(messageToSend) + 1, 0);
 
 	if (iResult == SOCKET_ERROR)
 	{
 		printf("send failed with error: %d\n", WSAGetLastError());
-		closesocket(workerSocket);
+		closesocket(connectSocket);
 		WSACleanup();
 		return 1;
 	}
+	//Sleep(5000);
 
-	closesocket(workerSocket);
-	WSACleanup();
-
+	printf("Bytes Sent: %ld\n", iResult);
+	closesocket(connectSocket);
 	return 0;
 }
 
 DWORD WINAPI receiveThread(LPVOID param) {
 	//TODO receiveThreadParameters should have another reference to a queue here and to the list so they can modify them selfs
 	WorkerRoleData* parameters = (WorkerRoleData*)param;
+
+	SOCKET listenSocket = CreateSocketServer(parameters->port, 0);
+	// Socket used for communication with client
+	SOCKET acceptedSocket = INVALID_SOCKET;
+
 	int iResult;
-	SOCKET listenSocketServer = CreateSocketServer(parameters->port, 1);
-	iResult = listen(listenSocketServer, SOMAXCONN);
-	char* recvbuf = NULL;
+	char recvbuf[DEFAULT_BUFLEN];
+	iResult = listen(listenSocket, SOMAXCONN);
 	if (iResult == SOCKET_ERROR)
 	{
 		printf("listen failed with error: %d\n", WSAGetLastError());
-		closesocket(listenSocketServer);
-		WSACleanup();
-		return 1;
-	}
-	iResult = Select(listenSocketServer, 1);
-	if (iResult == SOCKET_ERROR)
-	{
-		fprintf(stderr, "select failed with error: %ld\n", WSAGetLastError());
-		getchar();
-		return 1;
-	}
-
-	SOCKET acceptSocket = accept(listenSocketServer, NULL, NULL);
-	if (acceptSocket == INVALID_SOCKET)
-	{
-		printf("accept failed with error: %d\n", WSAGetLastError());
-		closesocket(acceptSocket);
+		closesocket(listenSocket);
 		WSACleanup();
 		return 1;
 	}
 
-	unsigned long int nonBlockingMode = 1;
-	iResult = ioctlsocket(acceptSocket, FIONBIO, &nonBlockingMode);
-	if (iResult == SOCKET_ERROR)
-	{
-		printf("ioctlsocket failed with error: %ld\n", WSAGetLastError());
-		return 1;
-	}
-
-	iResult = Select(acceptSocket, 0);
-	if (iResult == -1)
-	{
-		fprintf(stderr, "select failed with error AAA: %ld\n", WSAGetLastError());
-		closesocket(acceptSocket);
-		WSACleanup();
-		return 1;
-	}
+	printf("Server initialized, waiting for clients.\n");
 
 	do
 	{
-		char* recvbuf = (char*)malloc(MESSAGE_SIZE);
-		memset(recvbuf, 0, MESSAGE_SIZE);
+		// Wait for clients and accept client connections.
+		// Returning value is acceptedSocket used for further
+		// Client<->Server communication. This version of
+		// server will handle only one client.
+		acceptedSocket = accept(listenSocket, NULL, NULL);
+
+		if (acceptedSocket == INVALID_SOCKET)
+		{
+			printf("accept failed with error: %d\n", WSAGetLastError());
+			closesocket(listenSocket);
+			WSACleanup();
+			return 1;
+		}
+
 		// Receive data until the client shuts down the connection
-		iResult = recv(acceptSocket, recvbuf, 512, 0);
+		iResult = recv(acceptedSocket, recvbuf, DEFAULT_BUFLEN, 0);
 		if (iResult > 0)
 		{
-			printf("Message received from worker: %s.\n", recvbuf);
-			printf("Connection with worker closed.\n");
-			closesocket(acceptSocket);
-			break;
+			printf("Message received from client: %s.\n", recvbuf);
+			//closesocket(acceptedSocket);
 		}
 		else if (iResult == 0)
 		{
 			// connection was closed gracefully
-			printf("Connection with client closed AAAAAAAAA.\n");
-			closesocket(acceptSocket);
+			printf("Connection with client closed.\n");
+			closesocket(acceptedSocket);
 		}
 		else
 		{
 			// there was an error during recv
-			if (WSAGetLastError() == WSAEWOULDBLOCK)
-			{
-				iResult = 1;
-				continue;
-			}
-			else
-			{
-				printf("recv failed with error AAAAAAAAAAAAA: %d\n", WSAGetLastError());
-				closesocket(acceptSocket);
-			}
+			printf("recv failed with error: %d\n", WSAGetLastError());
+			closesocket(acceptedSocket);
 		}
-	} while (iResult > 0);
-	closesocket(acceptSocket);
-	if (recvbuf != NULL)
-		free(recvbuf);
+		printf("Client should have shutted down connection");
+	} while (1);
+
+	// shutdown the connection since we're done
+	iResult = shutdown(acceptedSocket, SD_SEND);
+	if (iResult == SOCKET_ERROR)
+	{
+		printf("shutdown failed with error: %d\n", WSAGetLastError());
+		closesocket(acceptedSocket);
+		//WSACleanup();
+		return 1;
+	}
+
+	// cleanup
+	closesocket(listenSocket);
+	closesocket(acceptedSocket);
+	//WSACleanup();
+
 	return 0;
 }
