@@ -15,7 +15,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Sockets.h">
       <Filter>Sockets</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)ReceiveAndSendModel.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)List.h">
       <Filter>Data</Filter>
     </ClInclude>

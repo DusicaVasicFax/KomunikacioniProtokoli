@@ -17,7 +17,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Data.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)List.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Queue.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)ReceiveAndSendModel.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Sockets.h" />
   </ItemGroup>
   <ItemGroup>

@@ -4,12 +4,10 @@
 #define DATA_H_
 #include <winsock2.h>
 
-
 typedef struct dataNode {
 	SOCKET* socket;
 	char* value;
 }DataNode;
-
 
 typedef struct queue {
 	unsigned int head;
@@ -28,11 +26,10 @@ typedef struct listNode {
 } List;
 
 typedef struct workerRole
-{	
+{
 	char* value;
 	char* port;
 }WorkerRoleData;
-
 
 typedef struct receiveThread
 {
@@ -41,5 +38,16 @@ typedef struct receiveThread
 	SOCKET* clientSocket;
 }ReceiveThreadParams;
 
+typedef struct receiveParameters {
+	SOCKET* listenSocket;
+	Queue* queue;
+	Queue* recQueue;
+	List* list;
+}ReceiveParameters;
+
+typedef struct responseParameters {
+	SOCKET* clientSocket;
+	Queue* queue;
+}ResponseParameters;
 
 #endif 
