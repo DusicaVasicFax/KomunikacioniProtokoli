@@ -7,5 +7,6 @@ DWORD WINAPI clientListeningThread(LPVOID param);
 DWORD WINAPI dispatcher(LPVOID param);
 DWORD WINAPI workerRole(LPVOID param);
 DWORD WINAPI receiveThread(LPVOID param);
+DWORD WINAPI response(LPVOID param);
 
 #endif

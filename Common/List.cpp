@@ -3,22 +3,22 @@
 void print_list(List* head) {
 	List* current = head;
 	while (current != NULL) {
-		printf("Ip address: %s\n", current->ipAddress);
 		printf("Port: %s\n", current->listeningPort);
 		printf("Active: %d\n", current->active);
+		printf("Id:%d\n", current->id);
 
 		current = current->next;
 	}
 }
 
-void pushToBeginning(List** head, char* ipAddress, char* listeningPort, int active) {
+void pushToBeginning(List** head, char* listeningPort, bool active,int id) {
 	List* newNode = (List*)malloc(sizeof(List));
 
 	newNode->next = *head; //original head pointer
 	*head = newNode; //switch the two pointers
-	newNode->ipAddress = ipAddress;
 	newNode->listeningPort = listeningPort;
 	newNode->active = active;
+	newNode->id = id;
 }
 
 void freeList(List* head) {
@@ -34,13 +34,12 @@ List* createList(void) {
 
 	if (list != NULL) {
 		list->active = 0;
-		list->ipAddress = (char*)"testIpAddress";
 		list->listeningPort = (char*)"testListeningPort";
 		list->next = NULL;
 
-		pushToBeginning(&list, (char*)"192.168.0.1", (char*)"25506", 0);
-		pushToBeginning(&list, (char*)"192.168.0.2", (char*)"25507", 0);
-		pushToBeginning(&list, (char*)"192.168.0.3", (char*)"25508", 0);
+		pushToBeginning(&list, (char*)"25506", false,1);
+		pushToBeginning(&list, (char*)"25507", false,2);
+		pushToBeginning(&list, (char*)"25508", false,3);
 	}
 	return list;
 }

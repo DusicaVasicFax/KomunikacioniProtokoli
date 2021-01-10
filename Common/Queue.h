@@ -10,14 +10,6 @@
 #include <windows.h>
 #include <stdbool.h>
 
-typedef struct queue {
-	unsigned int head;
-	unsigned int tail;
-	bool isFull;
-	unsigned int size;
-	DataNode** entries;
-	CRITICAL_SECTION criticalSection;
-}Queue;
 
 Queue* createQueue(void);
 void deleteQueue(Queue* queue);

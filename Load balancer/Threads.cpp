@@ -52,7 +52,7 @@ DWORD WINAPI clientListeningThread(LPVOID param) {
 			//TODO serilize and desirilazie data
 			DataNode* newNode = (DataNode*)malloc(sizeof(DataNode));
 			newNode->value = recvbuf;
-			newNode->processId = 5;
+			newNode->socket = &acceptSocket;
 
 			if (insertInQueue(parameters->queue, newNode) == false)
 				puts("Error inserting in queue");
@@ -85,7 +85,7 @@ DWORD WINAPI clientListeningThread(LPVOID param) {
 
 DWORD WINAPI dispatcher(LPVOID param) {
 	ReceiveParameters* parameters = (ReceiveParameters*)param;
-	Queue* queue = parameters->queue;
+	Queue* queue = parameters->queue; //ovde imamo poruku i client socket
 	List* list = parameters->list;
 
 	while (1) {
@@ -109,17 +109,24 @@ DWORD WINAPI dispatcher(LPVOID param) {
 			if (current == NULL) {
 				printf("ERROR ERROR ERROR I CRASHED");
 			}
-			current->ipAddress;
 			current->listeningPort;
 			current->active = 0;
+			current->id;
 
 			WorkerRoleData data;
-			data.port = (char*)"27099";
-			data.value = node->value;
+			data.port = current->listeningPort; //port worker role
+			data.value = node->value; //poruka
 #pragma endregion
+
 			DWORD receiverThreadId;
+			ReceiveThreadParams receiveParams;
+
+			receiveParams.receiveQueue = parameters->recQueue;
+			receiveParams.port = current->listeningPort;
+			receiveParams.clientSocket = node->socket;
+
 			HANDLE receive, worker;
-			receive = CreateThread(NULL, 0, &receiveThread, &data, 0, &receiverThreadId);
+			receive = CreateThread(NULL, 0, &receiveThread, &receiveParams, 0, &receiverThreadId);
 
 			DWORD workerRole1Id;
 			worker = CreateThread(NULL, 0, &workerRole, &data, 0, &workerRole1Id);
@@ -145,7 +152,11 @@ DWORD WINAPI workerRole(LPVOID param)
 	SOCKET connectSocket = CreateSocketClient((char*)"127.0.0.1", atoi(parameters->port), 0);
 	// variable used to store function return value
 	int iResult;
-	char* messageToSend = (char*)"this is a test";
+
+	char messageToSend[100];
+
+	strcpy_s(messageToSend,parameters->value);
+	strcat_s(messageToSend, " OK");	
 
 	iResult = send(connectSocket, messageToSend, (int)strlen(messageToSend) + 1, 0);
 
@@ -165,7 +176,8 @@ DWORD WINAPI workerRole(LPVOID param)
 
 DWORD WINAPI receiveThread(LPVOID param) {
 	//TODO receiveThreadParameters should have another reference to a queue here and to the list so they can modify them selfs
-	WorkerRoleData* parameters = (WorkerRoleData*)param;
+	ReceiveThreadParams* parameters = (ReceiveThreadParams*)param;
+	
 
 	SOCKET listenSocket = CreateSocketServer(parameters->port, 0);
 	// Socket used for communication with client
@@ -205,6 +217,17 @@ DWORD WINAPI receiveThread(LPVOID param) {
 		if (iResult > 0)
 		{
 			printf("Message received from client: %s.\n", recvbuf);
+			DataNode* newNode = (DataNode*)malloc(sizeof(DataNode));
+			newNode->value = recvbuf;
+			newNode->socket = parameters->clientSocket;
+			
+			if (!insertInQueue(parameters->receiveQueue, newNode))
+			{
+				printf("Error inserting in queue");
+			}
+			else
+				printf("Added to queue");
+
 			//closesocket(acceptedSocket);
 		}
 		else if (iResult == 0)
@@ -238,4 +261,51 @@ DWORD WINAPI receiveThread(LPVOID param) {
 	//WSACleanup();
 
 	return 0;
+}
+
+DWORD WINAPI response(LPVOID param)
+{
+	ResponseParameters* parameters = (ResponseParameters*)param;
+
+	while (1) {
+		if (isEmpty(parameters->queue) == true)
+		{
+			puts("Queue je prazan!");
+			Sleep(5000);
+			continue;
+		}
+		else
+		{
+			DataNode* node = (DataNode*)malloc(sizeof(DataNode));
+			node = lookHead(parameters->queue);
+
+			removeFromQueue(parameters->queue);
+
+			printf("%s", node->value);
+
+
+			SOCKET connectSocket = *(node->socket);
+			// variable used to store function return value
+			int iResult;
+
+
+			iResult = send(connectSocket, node->value, (int)strlen(node->value) + 1, 0);
+
+			if (iResult == SOCKET_ERROR)
+			{
+				printf("send failed with error: %d\n", WSAGetLastError());
+				closesocket(connectSocket);
+				WSACleanup();
+				return 1;
+			}
+			//Sleep(5000);
+
+			printf("Bytes Sent: %ld\n", iResult);
+			closesocket(connectSocket);
+			return 0;
+
+
+
+		}Sleep(1000);
+	}
 }

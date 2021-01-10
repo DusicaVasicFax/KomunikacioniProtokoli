@@ -65,6 +65,31 @@ int __cdecl main(int argc, char** argv)
 		WSACleanup();
 		return 1;
 	}
+
+	/*-------------------------------RECEIVE-------------------------*/
+
+	char recvbuf[DEFAULT_BUFLEN];
+	iResult = recv(connectSocket, recvbuf, DEFAULT_BUFLEN, 0);
+	if (iResult > 0)
+	{
+		printf("Message received from client: %s.\n", recvbuf);		
+	}
+	else if (iResult == 0)
+	{
+		// connection was closed gracefully
+		printf("Connection with client closed.\n");
+		closesocket(connectSocket);
+	}
+	else
+	{
+		// there was an error during recv
+		printf("recv failed with error: %d\n", WSAGetLastError());
+		closesocket(connectSocket);
+	}
+
+	printf("Bytes Sent: %ld\n", iResult);
+	
+
 	Sleep(5000);
 	//}
 	// Send an prepared message with null terminator included

@@ -8,7 +8,13 @@
 typedef struct receiveParameters {
 	SOCKET* listenSocket;
 	Queue* queue;
+	Queue* recQueue;
 	List* list;
 }ReceiveParameters;
+
+typedef struct responseParameters {
+	SOCKET* clientSocket;
+	Queue* queue;
+}ResponseParameters;
 
 #endif

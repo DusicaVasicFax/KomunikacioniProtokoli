@@ -20,27 +20,43 @@
 
 #define SAFE_DELETE_HANDLE(a) if(a){CloseHandle(a);}
 
-int main(int argc, char** argv) {
+int main(int argc, char** argv) 
+{
+
+
 	if (InitializeWindowsSockets() == false)
 		return 1;
 
 	int iResult;
 
+#pragma region Initialization
 	/*Initalized queue and checked if it initalized correctly*/
 	Queue* queue = NULL;
+	Queue* recQueue = NULL;
 	queue = createQueue();
+	recQueue = createQueue();
 
 	List* list = NULL;
 	list = createList();
-	if (queue == NULL || list == NULL)
+	if (queue == NULL || list == NULL || recQueue == NULL)
+	{
+		printf("One of the queues or list have not been intialized");
 		return 1;
+	}
+#pragma endregion
 
 	ReceiveParameters dispatcherParams;
 	dispatcherParams.queue = queue;
+	dispatcherParams.recQueue = recQueue;
 	dispatcherParams.list = list;
 	DWORD dispatcherThreadId;
 
+	ResponseParameters responseParams;
+	responseParams.queue = recQueue;
+	DWORD responseThreadId;
+
 	CreateThread(NULL, 0, &dispatcher, &dispatcherParams, 0, &dispatcherThreadId);
+	CreateThread(NULL, 0, &response, &responseParams, 0, &responseThreadId);
 
 	SOCKET listenSocketServer = CreateSocketServer((char*)SERVER_PORT, 1);
 	iResult = listen(listenSocketServer, SOMAXCONN);
