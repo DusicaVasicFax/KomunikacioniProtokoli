@@ -3,9 +3,6 @@
 #ifndef SOCKET_FUNCTIONS_H_
 #define SOCKET_FUNCTIONS_H_
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
-
-#define MAX_CLIENTS 3
-
 #include <ws2tcpip.h>
 #include <WinSock2.h>
 #include <stdlib.h>

@@ -11,7 +11,7 @@ void print_list(List* head) {
 	}
 }
 
-void pushToBeginning(List** head, char* listeningPort, bool active,int id) {
+void pushToBeginning(List** head, char* listeningPort, bool active, int id) {
 	List* newNode = (List*)malloc(sizeof(List));
 
 	newNode->next = *head; //original head pointer
@@ -29,17 +29,20 @@ void freeList(List* head) {
 	}
 }
 
-List* createList(void) {
+List* createList(bool empty) {
 	List* list = (List*)malloc(sizeof(List));
+	if (empty) {
+		return list;
+	}
 
 	if (list != NULL) {
-		list->active = 0;
-		list->listeningPort = (char*)"testListeningPort";
+		list->active = false;
+		list->listeningPort = (char*)"25505";
 		list->next = NULL;
 
-		pushToBeginning(&list, (char*)"25506", false,1);
-		pushToBeginning(&list, (char*)"25507", false,2);
-		pushToBeginning(&list, (char*)"25508", false,3);
+		pushToBeginning(&list, (char*)"25506", false, 1);
+		pushToBeginning(&list, (char*)"25507", false, 2);
+		pushToBeginning(&list, (char*)"25508", false, 3);
 	}
 	return list;
 }

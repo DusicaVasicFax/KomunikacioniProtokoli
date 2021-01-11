@@ -50,7 +50,7 @@ int __cdecl main(int argc, char** argv)
 		closesocket(connectSocket);
 		WSACleanup();
 	}
-	//while (1) {
+
 	char* messageToSend = (char*)"this is a test";
 
 	iResult = send(connectSocket, messageToSend, (int)strlen(messageToSend) + 1, 0);
@@ -84,8 +84,7 @@ int __cdecl main(int argc, char** argv)
 		closesocket(connectSocket);
 	}
 
-	Sleep(5000);
-	//}
+	/*Sleep(5000);*/
 	_getch();
 	// cleanup
 	closesocket(connectSocket);

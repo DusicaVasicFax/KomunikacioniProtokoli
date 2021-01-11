@@ -42,7 +42,8 @@ typedef struct receiveParameters {
 	SOCKET* listenSocket;
 	Queue* queue;
 	Queue* recQueue;
-	List* list;
+	List* availableWorkers;
+	List* takenWorkers;
 }ReceiveParameters;
 
 typedef struct responseParameters {
@@ -50,4 +51,9 @@ typedef struct responseParameters {
 	Queue* queue;
 }ResponseParameters;
 
+typedef struct clientReceiveMessageParameters {
+	SOCKET* clientSocket;
+	Queue* queue;
+	int i;
+} ClientReceiveMessageParameters;
 #endif 

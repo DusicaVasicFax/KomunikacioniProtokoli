@@ -8,12 +8,13 @@
 #include "Sockets.h"
 #include "List.h"
 #include "Queue.h"
-#define MESSAGE_SIZE 512
 
+//extern SOCKET clientSockets[MAX_CLIENTS];
+//extern short lastIndex = 0;
 DWORD WINAPI dispatcher(LPVOID param) {
 	ReceiveParameters* parameters = (ReceiveParameters*)param;
 	Queue* queue = parameters->queue; //ovde imamo poruku i client socket
-	List* list = parameters->list;
+	List* list = parameters->availableWorkers;
 
 	while (1) {
 		if (isEmpty(queue) == true)
@@ -158,7 +159,7 @@ DWORD WINAPI receiveThread(LPVOID param) {
 	return 0;
 }
 
-DWORD WINAPI response(LPVOID param)
+DWORD WINAPI respondToClient(LPVOID param)
 {
 	ResponseParameters* parameters = (ResponseParameters*)param;
 
