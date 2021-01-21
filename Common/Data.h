@@ -18,40 +18,47 @@ typedef struct queue {
 	CRITICAL_SECTION criticalSection;
 }Queue;
 
-typedef struct listNode {
+typedef struct _Node {
 	char* listeningPort;
-	bool active;
 	int id;
-	struct listNode* next;
+	struct _Node* next;
+} Node;
+
+typedef struct _List {
+	Node* head;
+	CRITICAL_SECTION criticalSection;
 } List;
 
 typedef struct workerRole
 {
 	char* value;
-	char* port;
+	Node* currentWorker;
 }WorkerRoleData;
 
-typedef struct receiveThread
+typedef struct _ReceiveThreadParams
 {
 	Queue* receiveQueue;
-	char* port;
+	List* availableWorkers;
+	List* takenWorkers;
+	Node* currentReceive;
+	//TODO should we only send port and id here?
 	SOCKET* clientSocket;
 }ReceiveThreadParams;
 
-typedef struct receiveParameters {
+typedef struct _DispatcherParameters {
 	SOCKET* listenSocket;
 	Queue* queue;
 	Queue* recQueue;
 	List* availableWorkers;
 	List* takenWorkers;
-}ReceiveParameters;
+}DispatcherParameters;
 
-typedef struct responseParameters {
+typedef struct _ResponseParameters {
 	SOCKET* clientSocket;
 	Queue* queue;
 }ResponseParameters;
 
-typedef struct clientReceiveMessageParameters {
+typedef struct _ClientReceiveMessageParameters {
 	SOCKET* clientSocket;
 	Queue* queue;
 	int i;

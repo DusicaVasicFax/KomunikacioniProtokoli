@@ -19,10 +19,9 @@
 #define MAX_CLIENTS 3
 #define SAFE_DELETE_HANDLE(a) if(a){CloseHandle(a);}
 
-SOCKET clientSockets[MAX_CLIENTS];
-short lastIndex = 0;
 int numberOfClients = 3;
 DWORD WINAPI receiveMessageFromClient(LPVOID param);
+
 int main(int argc, char** argv)
 {
 	if (InitializeWindowsSockets() == false)
@@ -43,14 +42,14 @@ int main(int argc, char** argv)
 
 	List* takenWorkers = NULL;
 	takenWorkers = createList(true);
-	if (queue == NULL || availableWorkers == NULL || recQueue == NULL || takenWorkers)
+	if (queue == NULL || availableWorkers == NULL || recQueue == NULL || takenWorkers == NULL)
 	{
 		printf("One of the queues or list have not been intialized");
 		return 1;
 	}
 #pragma endregion
 
-	ReceiveParameters dispatcherParams;
+	DispatcherParameters dispatcherParams;
 	dispatcherParams.queue = queue;
 	dispatcherParams.recQueue = recQueue;
 	dispatcherParams.availableWorkers = availableWorkers;
@@ -100,7 +99,7 @@ int main(int argc, char** argv)
 		}
 		DWORD receiveID;
 		HANDLE hReceive;
-		clientReceiveMessageParameters clientParameters;
+		_ClientReceiveMessageParameters clientParameters;
 		clientParameters.clientSocket = &acceptedSocket;
 		clientParameters.queue = queue;
 		hReceive = CreateThread(NULL, 0, &receiveMessageFromClient, &clientParameters, 0, &receiveID);
@@ -113,7 +112,8 @@ int main(int argc, char** argv)
 	closesocket(listenSocket);
 	deleteQueue(queue);
 	deleteQueue(recQueue);
-
+	deleteList(availableWorkers);
+	deleteList(takenWorkers);
 	CloseHandle(dispatch);
 	CloseHandle(response);
 	WSACleanup();

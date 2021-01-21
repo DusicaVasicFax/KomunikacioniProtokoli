@@ -12,9 +12,10 @@
 //extern SOCKET clientSockets[MAX_CLIENTS];
 //extern short lastIndex = 0;
 DWORD WINAPI dispatcher(LPVOID param) {
-	ReceiveParameters* parameters = (ReceiveParameters*)param;
+	DispatcherParameters* parameters = (DispatcherParameters*)param;
 	Queue* queue = parameters->queue; //ovde imamo poruku i client socket
-	List* list = parameters->availableWorkers;
+	List* availableWorkers = parameters->availableWorkers;
+	List* takenWorkers = parameters->takenWorkers;
 
 	while (1) {
 		if (isEmpty(queue) == true)
@@ -24,34 +25,43 @@ DWORD WINAPI dispatcher(LPVOID param) {
 			continue;
 		}
 		else {
+#pragma region "Create worker thread on the first available ip address"
+
+			if (availableWorkers == NULL) {
+				printf("NO AVAILABLE WORKERS CURRENTLY, WAIT A LITTLE BIT");
+				//TODO maybe sleep some here?
+				continue;
+			}
+
 #pragma region "POP FROM QUEUE"
 
 			DataNode* node = (DataNode*)malloc(sizeof(DataNode));
 			node = lookHead(parameters->queue);
 			removeFromQueue(queue);
 #pragma endregion
+			Node* current = (Node*)malloc(sizeof(Node));
+			EnterCriticalSection(&(availableWorkers->criticalSection));
+			current->id = availableWorkers->head->id;
+			current->listeningPort = availableWorkers->head->listeningPort;
+			LeaveCriticalSection(&(availableWorkers->criticalSection));
+			pushToBeginning(takenWorkers, current->listeningPort, current->id);
 
-#pragma region "Create worker thread on the first available ip address"
-
-			List* current = getFirstAvailable(list);
-			if (current == NULL) {
-				printf("ERROR ERROR ERROR I CRASHED");
-			}
-			current->listeningPort;
-			current->active = 0;
-			current->id;
+			deleteFirstNodeFromList(availableWorkers, current->id);
 
 			WorkerRoleData data;
-			data.port = (char*)"25506"; //port worker role
 			data.value = node->value; //poruka
+			data.currentWorker = current;
+
 #pragma endregion
 
 			DWORD receiverThreadId;
 			ReceiveThreadParams receiveParams;
 
 			receiveParams.receiveQueue = parameters->recQueue;
-			receiveParams.port = (char*)"25506";
 			receiveParams.clientSocket = node->socket;
+			receiveParams.availableWorkers = availableWorkers;
+			receiveParams.takenWorkers = takenWorkers;
+			receiveParams.currentReceive = current;
 
 			HANDLE receive, worker;
 			receive = CreateThread(NULL, 0, &receiveThread, &receiveParams, 0, &receiverThreadId);
@@ -70,8 +80,10 @@ DWORD WINAPI workerRole(LPVOID param)
 {
 	WorkerRoleData* parameters = (WorkerRoleData*)param;
 
-	SOCKET connectSocket = CreateSocketClient((char*)"127.0.0.1", atoi(parameters->port), 0);
-	// variable used to store function return value
+	SOCKET connectSocket = CreateSocketClient((char*)"127.0.0.1", atoi(parameters->currentWorker->listeningPort), 0);
+	//TODO do we need a check if this socket is created correctly ?
+	printf("Worker with id: %d started successfully", parameters->currentWorker->id);
+
 	int iResult;
 
 	char messageToSend[100];
@@ -89,6 +101,7 @@ DWORD WINAPI workerRole(LPVOID param)
 		return 1;
 	}
 	closesocket(connectSocket);
+
 	printf("Worker should close\n");
 	return 0;
 }
@@ -97,7 +110,7 @@ DWORD WINAPI receiveThread(LPVOID param) {
 	//TODO receiveThreadParameters should have another reference to a queue here and to the list so they can modify them selfs
 	ReceiveThreadParams* parameters = (ReceiveThreadParams*)param;
 
-	SOCKET listenSocket = CreateSocketServer(parameters->port, 0);
+	SOCKET listenSocket = CreateSocketServer(parameters->currentReceive->listeningPort, 0);
 	// Socket used for communication with client
 	SOCKET acceptedSocket = INVALID_SOCKET;
 
@@ -113,7 +126,7 @@ DWORD WINAPI receiveThread(LPVOID param) {
 		return 1;
 	}
 
-	printf("Receiving thread started\n");
+	printf("Receiving thread stared and waiting for workers result with id: %d\n", parameters->currentReceive->id);
 
 	acceptedSocket = accept(listenSocket, NULL, NULL);
 
@@ -154,7 +167,14 @@ DWORD WINAPI receiveThread(LPVOID param) {
 		closesocket(acceptedSocket);
 	}
 
+	Node* current = (Node*)malloc(sizeof(Node));
+	current = parameters->takenWorkers->head;
+
 	closesocket(listenSocket);
+	//TODO delete should be done with search just to be sure
+	pushToBeginning(parameters->availableWorkers, current->listeningPort, current->id);
+	deleteFirstNodeFromList(parameters->takenWorkers, current->id);
+	free(parameters->currentReceive);
 	printf("recive thread finished\n");
 	return 0;
 }
