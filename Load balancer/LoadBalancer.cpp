@@ -13,12 +13,13 @@
 #pragma comment(lib,"ws2_32.lib")
 
 #define SERVER_PORT "5059"
-#define MAX_CLIENTS 3
+#define MAX_CLIENTS 10
 #define SAFE_DELETE_HANDLE(a) if(a){CloseHandle(a);}
 
 int numberOfClients = MAX_CLIENTS;
 DWORD WINAPI receiveMessageFromClient(LPVOID param);
-
+SOCKET clientSockets[MAX_CLIENTS];
+int lastIndex = 0;
 int main(int argc, char** argv)
 {
 	if (InitializeWindowsSockets() == false)
@@ -44,7 +45,6 @@ int main(int argc, char** argv)
 		printf("One of the queues or list have not been intialized");
 		return 1;
 	}
-#pragma endregion
 
 	DispatcherParameters dispatcherParams;
 	dispatcherParams.queue = queue;
@@ -70,16 +70,19 @@ int main(int argc, char** argv)
 		WSACleanup();
 		return 1;
 	}
-	SOCKET acceptedSocket = INVALID_SOCKET;
+
 	printf("Load balancer has succesfully started\n");
+	for (int i = 0; i < MAX_CLIENTS; i++) {
+		clientSockets[i] = INVALID_SOCKET;
+	}
 
 	unsigned long int nonBlockingMode = 1;
 	do
 	{
 		iResult = Select(listenSocket, true);
-		acceptedSocket = accept(listenSocket, NULL, NULL);
+		clientSockets[lastIndex] = accept(listenSocket, NULL, NULL);
 
-		if (acceptedSocket == INVALID_SOCKET)
+		if (clientSockets[lastIndex] == INVALID_SOCKET)
 		{
 			printf("accept failed with error: %d\n", WSAGetLastError());
 			closesocket(listenSocket);
@@ -87,19 +90,21 @@ int main(int argc, char** argv)
 			return 1;
 		}
 		unsigned long int nonBlockingMode = 1;
-		iResult = ioctlsocket(acceptedSocket, FIONBIO, &nonBlockingMode);
+		iResult = ioctlsocket(clientSockets[lastIndex], FIONBIO, &nonBlockingMode);
 
 		if (iResult == SOCKET_ERROR)
 		{
 			printf("ioctlsocket failed with error: %ld\n", WSAGetLastError());
 			return 1;
 		}
+
 		DWORD receiveID;
 		HANDLE hReceive;
 		ClientReceiveMessageParameters clientParameters;
-		clientParameters.clientSocket = &acceptedSocket;
+		clientParameters.clientSocket = &clientSockets[lastIndex];
 		clientParameters.queue = queue;
 		hReceive = CreateThread(NULL, 0, &receiveMessageFromClient, &clientParameters, 0, &receiveID);
+		lastIndex++;
 
 		CloseHandle(hReceive);
 
@@ -124,13 +129,13 @@ DWORD WINAPI receiveMessageFromClient(LPVOID param) {
 	Queue* queue = parameters->queue;
 	int iResult;
 	char* recvbuf;
-
+	int index = lastIndex;
 	do
 	{
-		recvbuf = (char*)malloc(MESSAGE_SIZE);
+		recvbuf = (char*)malloc(sizeof(int));
 		iResult = Select(clientSocket, true);
 		// Receive data until the client shuts down the connection
-		iResult = recv(clientSocket, recvbuf, MESSAGE_SIZE, 0);
+		iResult = recv(clientSocket, recvbuf, sizeof(int), 0);
 
 		if (iResult > 0)
 		{
@@ -140,25 +145,44 @@ DWORD WINAPI receiveMessageFromClient(LPVOID param) {
 
 			if (insertInQueue(queue, newNode) == false)
 				puts("Error inserting in queue");
-			printf("Message received from client in clientListening thread %s\n", recvbuf);
+			printf("Message received from client in clientListening thread %d\n", *(int*)recvbuf);
 			printf("_______________________________  \n");
 		}
 		else if (iResult == 0)
 		{
 			// connection was closed gracefully
-			printf("Connection with client closed.\n");
+			printf("Connection with client %d closed.\n", index);
+
+			for (int j = index; j < lastIndex - 1; j++)
+			{
+				clientSockets[j] = clientSockets[j + 1];
+			}
+			clientSockets[lastIndex - 1] = 0;
+
+			lastIndex--;
+
 			closesocket(clientSocket);
 		}
 		else
 		{
 			// there was an error during recv
+			int ierr = WSAGetLastError();
+			if (ierr == WSAEWOULDBLOCK) {  // currently no data available
+				Sleep(50);  // wait and try again
+				continue;
+			}
 			printf("recv failed in receiveMessageFromClient with error: %d\n", WSAGetLastError());
 			closesocket(clientSocket);
+			for (int i = index; i < lastIndex - 1; i++)
+			{
+				clientSockets[i] = clientSockets[i + 1];
+			}
+			clientSockets[lastIndex - 1] = 0;
+
+			lastIndex--;
 		}
 	} while (iResult > 0);
 
 	numberOfClients--;
-	return 0;
-
 	return 0;
 }

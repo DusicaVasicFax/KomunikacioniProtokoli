@@ -55,8 +55,10 @@ int __cdecl main(int argc, char** argv)
 	printf("Enter measurment id: ");
 	int id;
 	scanf_s("%d", &id);
-	char buffer[100];
-	iResult = send(connectSocket, messageToSend, strlen(messageToSend) + 1, 0);
+	char* messageToSend = (char*)malloc(sizeof(int));
+	memcpy(messageToSend, &id, sizeof(int));
+
+	iResult = send(connectSocket, messageToSend, sizeof(int), 0);
 
 	if (iResult == SOCKET_ERROR)
 	{
@@ -69,6 +71,46 @@ int __cdecl main(int argc, char** argv)
 	/*-------------------------------RECEIVE-------------------------*/
 
 	char recvbuf[DEFAULT_BUFLEN];
+	iResult = recv(connectSocket, recvbuf, DEFAULT_BUFLEN, 0);
+	if (iResult > 0)
+	{
+		ClientProcessedRequest* processedData = Deserialize(recvbuf);
+		printf("Read measurment id: %d\n", processedData->measurmentId);
+		printf("Read measurment value: %.2f", processedData->measuredValue);
+		//printf("Message received from client: %s.\n", recvbuf);
+	}
+	else if (iResult == 0)
+	{
+		// connection was closed gracefully
+		printf("Connection with client closed.\n");
+		closesocket(connectSocket);
+	}
+	else
+	{
+		// there was an error during recv
+		printf("recv failed with error: %d\n", WSAGetLastError());
+		closesocket(connectSocket);
+	}
+
+	printf("Enter measurment id: ");
+	//int id;
+	scanf_s("%d", &id);
+	messageToSend = (char*)malloc(sizeof(int));
+	memcpy(messageToSend, &id, sizeof(int));
+
+	iResult = send(connectSocket, messageToSend, sizeof(int), 0);
+
+	if (iResult == SOCKET_ERROR)
+	{
+		printf("send failed with error: %d\n", WSAGetLastError());
+		closesocket(connectSocket);
+		WSACleanup();
+		return 1;
+	}
+	printf("Message sent successfully\n");
+	/*-------------------------------RECEIVE-------------------------*/
+
+	//char recvbuf[DEFAULT_BUFLEN];
 	iResult = recv(connectSocket, recvbuf, DEFAULT_BUFLEN, 0);
 	if (iResult > 0)
 	{

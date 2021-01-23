@@ -40,10 +40,12 @@ DWORD WINAPI dispatcher(LPVOID param) {
 			removeFromQueue(queue);
 #pragma endregion
 			Node* current = (Node*)malloc(sizeof(Node));
+
 			EnterCriticalSection(&(availableWorkers->criticalSection));
 			current->id = availableWorkers->head->id;
 			current->listeningPort = availableWorkers->head->listeningPort;
 			LeaveCriticalSection(&(availableWorkers->criticalSection));
+
 			pushToBeginning(takenWorkers, current->listeningPort, current->id);
 
 			deleteFirstNodeFromList(availableWorkers, current->id);
@@ -55,16 +57,16 @@ DWORD WINAPI dispatcher(LPVOID param) {
 #pragma endregion
 
 			DWORD receiverThreadId;
-			ReceiveThreadParams receiveParams;
+			ReceiveThreadParams* receiveParams = (ReceiveThreadParams*)malloc(sizeof(ReceiveThreadParams));
 
-			receiveParams.receiveQueue = parameters->recQueue;
-			receiveParams.clientSocket = node->socket;
-			receiveParams.availableWorkers = availableWorkers;
-			receiveParams.takenWorkers = takenWorkers;
-			receiveParams.currentReceive = current;
+			receiveParams->receiveQueue = parameters->recQueue;
+			receiveParams->clientSocket = node->socket;
+			receiveParams->availableWorkers = availableWorkers;
+			receiveParams->takenWorkers = takenWorkers;
+			receiveParams->currentReceive = current;
 
 			HANDLE receive, worker;
-			receive = CreateThread(NULL, 0, &receiveThread, &receiveParams, 0, &receiverThreadId);
+			receive = CreateThread(NULL, 0, &receiveThread, receiveParams, 0, &receiverThreadId);
 
 			DWORD workerRole1Id;
 			worker = CreateThread(NULL, 0, &workerRole, &data, 0, &workerRole1Id);
@@ -82,13 +84,13 @@ DWORD WINAPI workerRole(LPVOID param)
 
 	SOCKET connectSocket = CreateSocketClient((char*)"127.0.0.1", atoi(parameters->currentWorker->listeningPort), 0);
 	//TODO do we need a check if this socket is created correctly ?
-	printf("Worker with id: %d started successfully", parameters->currentWorker->id);
+	printf("Worker with id: %d started successfully\n", parameters->currentWorker->id);
 
 	int iResult;
 	srand(time(0));
 	ClientProcessedRequest* processedData = (ClientProcessedRequest*)malloc(sizeof(ClientProcessedRequest));
 	processedData->measuredValue = ((float)rand() / (float)(RAND_MAX)) * 3.99 * 1000;
-	processedData->measurmentId = atoi(parameters->requestMeasurmentId);
+	processedData->measurmentId = *(int*)parameters->requestMeasurmentId;
 
 	char* message = (char*)malloc(MESSAGE_SIZE);
 	message = Serialize(processedData);
@@ -113,7 +115,7 @@ DWORD WINAPI receiveThread(LPVOID param) {
 	ReceiveThreadParams* parameters = (ReceiveThreadParams*)param;
 
 	SOCKET listenSocket = CreateSocketServer(parameters->currentReceive->listeningPort, 0);
-	// Socket used for communication with client
+	printf("Receive with id: %d started successfully\n", parameters->currentReceive->id);
 	SOCKET acceptedSocket = INVALID_SOCKET;
 
 	int iResult;
@@ -174,9 +176,9 @@ DWORD WINAPI receiveThread(LPVOID param) {
 
 	closesocket(listenSocket);
 	//TODO delete should be done with search just to be sure
-	pushToBeginning(parameters->availableWorkers, current->listeningPort, current->id);
+	pushToBeginning(parameters->availableWorkers, parameters->currentReceive->listeningPort, parameters->currentReceive->id);
 	deleteFirstNodeFromList(parameters->takenWorkers, current->id);
-	free(parameters->currentReceive);
+	//free(parameters->currentReceive);
 	printf("recive thread finished\n");
 	return 0;
 }
