@@ -99,7 +99,7 @@ int main(int argc, char** argv)
 		}
 		DWORD receiveID;
 		HANDLE hReceive;
-		_ClientReceiveMessageParameters clientParameters;
+		ClientReceiveMessageParameters clientParameters;
 		clientParameters.clientSocket = &acceptedSocket;
 		clientParameters.queue = queue;
 		hReceive = CreateThread(NULL, 0, &receiveMessageFromClient, &clientParameters, 0, &receiveID);

@@ -9,8 +9,6 @@
 #include "List.h"
 #include "Queue.h"
 
-//extern SOCKET clientSockets[MAX_CLIENTS];
-//extern short lastIndex = 0;
 DWORD WINAPI dispatcher(LPVOID param) {
 	DispatcherParameters* parameters = (DispatcherParameters*)param;
 	Queue* queue = parameters->queue; //ovde imamo poruku i client socket

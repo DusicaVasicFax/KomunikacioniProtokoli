@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef THREADS_H_
 #define THREADS_H_
 
