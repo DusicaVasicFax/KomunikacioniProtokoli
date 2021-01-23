@@ -49,8 +49,17 @@ void deleteFirstNodeFromList(List* list, int id) {
 	EnterCriticalSection(&list->criticalSection);
 
 	if (list->head->id != id) {
-		//Tu treba implementirati to brisanje
-		printf("SOMETHING");
+		printf("EDGE CASE HAPPENED");
+		Node* temp = list->head;
+		Node* prev = NULL;
+		while (temp != NULL && temp->id != id) {
+			prev = temp;
+			temp = temp->next;
+		}
+		if (temp != NULL) {
+			prev->next = temp->next;
+			free(temp);
+		}
 	}
 	else {
 		Node* temp = list->head;
