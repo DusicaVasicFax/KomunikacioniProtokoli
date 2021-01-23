@@ -7,6 +7,9 @@
     <Filter Include="Sockets">
       <UniqueIdentifier>{a0172fbe-2942-479e-b649-eb59f834464b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Serializer">
+      <UniqueIdentifier>{c4a1ec20-3240-4722-a41e-63d0b1b91fe0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)Queue.h">
@@ -19,6 +22,9 @@
       <Filter>Data</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)Data.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Serializer.h">
+      <Filter>Serializer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)Queue.cpp">
@@ -29,6 +35,9 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)List.cpp">
       <Filter>Data</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Serializer.cpp">
+      <Filter>Serializer</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

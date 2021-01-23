@@ -42,6 +42,7 @@ void deleteFirstNodeFromList(List* list, int id) {
 
 	if (list->head->id != id) {
 		//Tu treba implementirati to brisanje
+		printf("SOMETHING");
 	}
 	else {
 		Node* temp = list->head;

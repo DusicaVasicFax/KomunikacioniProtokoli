@@ -4,10 +4,12 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <conio.h>
+#include<time.h>
 #include "Thread_declarations.h"
 #include "Sockets.h"
 #include "List.h"
 #include "Queue.h"
+#include "Serializer.h"
 
 DWORD WINAPI dispatcher(LPVOID param) {
 	DispatcherParameters* parameters = (DispatcherParameters*)param;
@@ -33,7 +35,7 @@ DWORD WINAPI dispatcher(LPVOID param) {
 
 #pragma region "POP FROM QUEUE"
 
-			DataNode* node = (DataNode*)malloc(sizeof(DataNode));
+			ClientMessageReceiveAndResponseData* node = (ClientMessageReceiveAndResponseData*)malloc(sizeof(ClientMessageReceiveAndResponseData));
 			node = lookHead(parameters->queue);
 			removeFromQueue(queue);
 #pragma endregion
@@ -47,7 +49,7 @@ DWORD WINAPI dispatcher(LPVOID param) {
 			deleteFirstNodeFromList(availableWorkers, current->id);
 
 			WorkerRoleData data;
-			data.value = node->value; //poruka
+			data.requestMeasurmentId = node->message; //poruka
 			data.currentWorker = current;
 
 #pragma endregion
@@ -83,13 +85,15 @@ DWORD WINAPI workerRole(LPVOID param)
 	printf("Worker with id: %d started successfully", parameters->currentWorker->id);
 
 	int iResult;
+	srand(time(0));
+	ClientProcessedRequest* processedData = (ClientProcessedRequest*)malloc(sizeof(ClientProcessedRequest));
+	processedData->measuredValue = ((float)rand() / (float)(RAND_MAX)) * 3.99 * 1000;
+	processedData->measurmentId = atoi(parameters->requestMeasurmentId);
 
-	char messageToSend[100];
-
-	strcpy_s(messageToSend, parameters->value);
-	strcat_s(messageToSend, " OK");
-
-	iResult = send(connectSocket, messageToSend, (int)strlen(messageToSend) + 1, 0);
+	char* message = (char*)malloc(MESSAGE_SIZE);
+	message = Serialize(processedData);
+	Sleep(5000);
+	iResult = send(connectSocket, message, MESSAGE_SIZE, 0);
 
 	if (iResult == SOCKET_ERROR)
 	{
@@ -115,6 +119,7 @@ DWORD WINAPI receiveThread(LPVOID param) {
 	int iResult;
 	char* recvbuf = (char*)malloc(MESSAGE_SIZE);
 	memset(recvbuf, 0, MESSAGE_SIZE);
+
 	iResult = listen(listenSocket, SOMAXCONN);
 	if (iResult == SOCKET_ERROR)
 	{
@@ -140,9 +145,8 @@ DWORD WINAPI receiveThread(LPVOID param) {
 	iResult = recv(acceptedSocket, recvbuf, MESSAGE_SIZE, 0);
 	if (iResult > 0)
 	{
-		printf("Message received from worker: %s.\n", recvbuf);
-		DataNode* newNode = (DataNode*)malloc(sizeof(DataNode));
-		newNode->value = recvbuf;
+		ClientMessageReceiveAndResponseData* newNode = (ClientMessageReceiveAndResponseData*)malloc(sizeof(ClientMessageReceiveAndResponseData));
+		newNode->data = Deserialize(recvbuf);
 		newNode->socket = parameters->clientSocket;
 
 		if (!insertInQueue(parameters->receiveQueue, newNode))
@@ -190,18 +194,17 @@ DWORD WINAPI respondToClient(LPVOID param)
 		}
 		else
 		{
-			DataNode* node = (DataNode*)malloc(sizeof(DataNode));
+			ClientMessageReceiveAndResponseData* node = (ClientMessageReceiveAndResponseData*)malloc(sizeof(ClientMessageReceiveAndResponseData));
 			node = lookHead(parameters->queue);
 
 			removeFromQueue(parameters->queue);
 
-			printf("Got it from the response queue... sending to client... please wait: %s\n\n", node->value);
+			printf("Got it from the response queue... sending to client... please wait\n\n");
 
 			SOCKET connectSocket = *(node->socket);
 			// variable used to store function return value
 			int iResult;
-
-			iResult = send(connectSocket, node->value, (int)strlen(node->value) + 1, 0);
+			iResult = send(connectSocket, Serialize(node->data), MESSAGE_SIZE, 0);
 
 			if (iResult == SOCKET_ERROR)
 			{

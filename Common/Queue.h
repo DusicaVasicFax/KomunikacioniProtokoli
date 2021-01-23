@@ -10,14 +10,13 @@
 #include <windows.h>
 #include <stdbool.h>
 
-
 Queue* createQueue(void);
 void deleteQueue(Queue* queue);
 void resizeQueue(Queue* queue);
 bool isEmpty(Queue* queue);
-bool insertInQueue(Queue* queue, DataNode* cNode);
-DataNode* removeFromQueue(Queue* queue);
-DataNode* lookHead(Queue* queue);
+bool insertInQueue(Queue* queue, ClientMessageReceiveAndResponseData* cNode);
+ClientMessageReceiveAndResponseData* removeFromQueue(Queue* queue);
+ClientMessageReceiveAndResponseData* lookHead(Queue* queue);
 unsigned int getSize(Queue* queue);
 
 #endif

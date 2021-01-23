@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <conio.h>
 #include "Sockets.h"
+#include <Serializer.h>
 #define DEFAULT_BUFLEN 512
 #define DEFAULT_PORT 5059
 
@@ -51,9 +52,11 @@ int __cdecl main(int argc, char** argv)
 		WSACleanup();
 	}
 
-	char* messageToSend = (char*)"this is a test";
-
-	iResult = send(connectSocket, messageToSend, (int)strlen(messageToSend) + 1, 0);
+	printf("Enter measurment id: ");
+	int id;
+	scanf_s("%d", &id);
+	char buffer[100];
+	iResult = send(connectSocket, messageToSend, strlen(messageToSend) + 1, 0);
 
 	if (iResult == SOCKET_ERROR)
 	{
@@ -69,7 +72,10 @@ int __cdecl main(int argc, char** argv)
 	iResult = recv(connectSocket, recvbuf, DEFAULT_BUFLEN, 0);
 	if (iResult > 0)
 	{
-		printf("Message received from client: %s.\n", recvbuf);
+		ClientProcessedRequest* processedData = Deserialize(recvbuf);
+		printf("Read measurment id: %d\n", processedData->measurmentId);
+		printf("Read measurment value: %.2f", processedData->measuredValue);
+		//printf("Message received from client: %s.\n", recvbuf);
 	}
 	else if (iResult == 0)
 	{

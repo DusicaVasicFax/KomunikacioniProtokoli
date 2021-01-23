@@ -4,17 +4,23 @@
 #define DATA_H_
 #include <winsock2.h>
 
-typedef struct dataNode {
-	SOCKET* socket;
-	char* value;
-}DataNode;
+typedef struct _ClientProcessedRequest {
+	int measurmentId;
+	float measuredValue;
+} ClientProcessedRequest;
 
-typedef struct queue {
+typedef struct _ClientMessageReceiveAndResponseData {
+	SOCKET* socket;
+	char* message;
+	ClientProcessedRequest* data;
+}ClientMessageReceiveAndResponseData;
+
+typedef struct _Queue {
 	unsigned int head;
 	unsigned int tail;
 	bool isFull;
 	unsigned int size;
-	DataNode** entries;
+	ClientMessageReceiveAndResponseData** entries;
 	CRITICAL_SECTION criticalSection;
 }Queue;
 
@@ -29,9 +35,9 @@ typedef struct _List {
 	CRITICAL_SECTION criticalSection;
 } List;
 
-typedef struct workerRole
+typedef struct _WorkerRoleData
 {
-	char* value;
+	char* requestMeasurmentId;
 	Node* currentWorker;
 }WorkerRoleData;
 
@@ -41,7 +47,6 @@ typedef struct _ReceiveThreadParams
 	List* availableWorkers;
 	List* takenWorkers;
 	Node* currentReceive;
-	//TODO should we only send port and id here?
 	SOCKET* clientSocket;
 }ReceiveThreadParams;
 
@@ -63,4 +68,5 @@ typedef struct _ClientReceiveMessageParameters {
 	Queue* queue;
 	int i;
 } ClientReceiveMessageParameters;
-#endif 
+
+#endif

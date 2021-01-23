@@ -13,13 +13,10 @@
 #pragma comment(lib,"ws2_32.lib")
 
 #define SERVER_PORT "5059"
-#define SERVER_SLEEP_TIME 50
-#define ACCESS_BUFFER_SIZE 1024
-#define IP_ADDRESS_LEN 16
 #define MAX_CLIENTS 3
 #define SAFE_DELETE_HANDLE(a) if(a){CloseHandle(a);}
 
-int numberOfClients = 3;
+int numberOfClients = MAX_CLIENTS;
 DWORD WINAPI receiveMessageFromClient(LPVOID param);
 
 int main(int argc, char** argv)
@@ -137,8 +134,8 @@ DWORD WINAPI receiveMessageFromClient(LPVOID param) {
 
 		if (iResult > 0)
 		{
-			DataNode* newNode = (DataNode*)malloc(sizeof(DataNode));
-			newNode->value = recvbuf;
+			ClientMessageReceiveAndResponseData* newNode = (ClientMessageReceiveAndResponseData*)malloc(sizeof(ClientMessageReceiveAndResponseData));
+			newNode->message = recvbuf;
 			newNode->socket = &clientSocket;
 
 			if (insertInQueue(queue, newNode) == false)

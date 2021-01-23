@@ -7,7 +7,7 @@ Queue* createQueue(void)
 
 	if (queue != NULL)
 	{
-		queue->entries = (DataNode**)malloc(sizeof(DataNode*) * size);
+		queue->entries = (ClientMessageReceiveAndResponseData**)malloc(sizeof(ClientMessageReceiveAndResponseData*) * size);
 		if (queue->entries != NULL)
 		{
 			queue->size = size;
@@ -42,7 +42,7 @@ void resizeQueue(Queue* queue)
 {
 	EnterCriticalSection(&(queue->criticalSection));
 
-	DataNode** temp = (DataNode**)malloc(sizeof(DataNode*) * queue->size * 2);
+	ClientMessageReceiveAndResponseData** temp = (ClientMessageReceiveAndResponseData**)malloc(sizeof(ClientMessageReceiveAndResponseData*) * queue->size * 2);
 
 	if (temp != NULL)
 	{
@@ -90,7 +90,7 @@ bool isEmpty(Queue* queue)
 	return false;
 }
 
-bool insertInQueue(Queue* queue, DataNode* DataNode)
+bool insertInQueue(Queue* queue, ClientMessageReceiveAndResponseData* ClientMessageReceiveAndResponseData)
 {
 	EnterCriticalSection(&(queue->criticalSection));
 
@@ -107,7 +107,7 @@ bool insertInQueue(Queue* queue, DataNode* DataNode)
 
 	if (queue->isFull == false)
 	{
-		queue->entries[queue->tail] = DataNode;
+		queue->entries[queue->tail] = ClientMessageReceiveAndResponseData;
 		queue->tail++;
 
 		if (queue->tail == queue->size)
@@ -126,11 +126,11 @@ bool insertInQueue(Queue* queue, DataNode* DataNode)
 	return true;
 }
 
-DataNode* removeFromQueue(Queue* queue)
+ClientMessageReceiveAndResponseData* removeFromQueue(Queue* queue)
 {
 	EnterCriticalSection(&(queue->criticalSection));
 
-	DataNode* DataNode = NULL;
+	ClientMessageReceiveAndResponseData* ClientMessageReceiveAndResponseData = NULL;
 
 	if (isEmpty(queue) == false)
 	{
@@ -139,7 +139,7 @@ DataNode* removeFromQueue(Queue* queue)
 			queue->isFull = false;
 		}
 
-		DataNode = queue->entries[queue->head];
+		ClientMessageReceiveAndResponseData = queue->entries[queue->head];
 		queue->head++;
 
 		if (queue->head == queue->size)
@@ -150,23 +150,23 @@ DataNode* removeFromQueue(Queue* queue)
 
 	LeaveCriticalSection(&(queue->criticalSection));
 
-	return DataNode;
+	return ClientMessageReceiveAndResponseData;
 }
 
-DataNode* lookHead(Queue* queue)
+ClientMessageReceiveAndResponseData* lookHead(Queue* queue)
 {
 	EnterCriticalSection(&(queue->criticalSection));
 
-	DataNode* DataNode = NULL;
+	ClientMessageReceiveAndResponseData* ClientMessageReceiveAndResponseData = NULL;
 
 	if (isEmpty(queue) == false)
 	{
-		DataNode = queue->entries[queue->head];
+		ClientMessageReceiveAndResponseData = queue->entries[queue->head];
 	}
 
 	LeaveCriticalSection(&(queue->criticalSection));
 
-	return DataNode;
+	return ClientMessageReceiveAndResponseData;
 }
 
 unsigned int getSize(Queue* queue)
