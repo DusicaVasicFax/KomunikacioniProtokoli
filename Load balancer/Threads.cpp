@@ -16,7 +16,7 @@ DWORD WINAPI dispatcher(LPVOID param) {
 	Queue* queue = parameters->queue; //ovde imamo poruku i client socket
 	List* availableWorkers = parameters->availableWorkers;
 	List* takenWorkers = parameters->takenWorkers;
-
+	printf("\nDISPATCHER STARTED\n");
 	while (!parameters->done) {
 		if (isEmpty(queue) == true)
 		{
@@ -79,6 +79,7 @@ DWORD WINAPI dispatcher(LPVOID param) {
 		}
 		Sleep(1000);
 	}
+	printf("\nDISPATCHER THREAD FINISHED\n");
 	return 0;
 }
 
@@ -161,7 +162,6 @@ DWORD WINAPI receiveThread(LPVOID param) {
 		}
 		else
 			printf("Added to response queue\n");
-
 	}
 	else if (iResult == 0)
 	{
@@ -187,7 +187,7 @@ DWORD WINAPI receiveThread(LPVOID param) {
 DWORD WINAPI respondToClient(LPVOID param)
 {
 	ResponseParameters* parameters = (ResponseParameters*)param;
-
+	printf("\nRESPOND STARTED\n");
 	while (!parameters->done) {
 		if (isEmpty(parameters->queue) == true)
 		{
@@ -218,5 +218,7 @@ DWORD WINAPI respondToClient(LPVOID param)
 			}
 		}
 	}
+
+	printf("\nRESPOND THREAD FINISHED\n");
 	return 0;
 }
