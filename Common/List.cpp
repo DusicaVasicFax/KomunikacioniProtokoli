@@ -18,7 +18,8 @@ List* createList(bool empty) {
 		return list;
 	}
 	List* list = (List*)malloc(sizeof(List));
-
+	InitializeCriticalSection(&list->criticalSection);
+	list->head = NULL;
 	pushToBeginning(list, (char*)"25506", 1);
 	pushToBeginning(list, (char*)"25507", 2);
 	pushToBeginning(list, (char*)"25508", 3);
@@ -70,11 +71,21 @@ void deleteFirstNodeFromList(List* list, int id) {
 }
 
 void deleteList(List* list) {
-	while (list->head != NULL) {
-		Node* temp = list->head;
-		list->head = list->head->next;
-		free(temp);
+	if (list != NULL) {
+		while (list->head != NULL) {
+			Node* temp = list->head;
+			if (list->head->next == NULL) {
+				list->head = NULL;
+			}
+			else {
+				list->head = list->head->next;
+			}
+
+			free(temp);
+		}
+		free(list->head);
+		DeleteCriticalSection(&(list->criticalSection));
+		free(list);
 	}
-	DeleteCriticalSection(&(list->criticalSection));
-	free(list);
+	return;
 }

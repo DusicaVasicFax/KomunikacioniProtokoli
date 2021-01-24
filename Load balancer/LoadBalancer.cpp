@@ -34,10 +34,8 @@ int main(int argc, char** argv)
 	Queue* recQueue = NULL;
 	queue = createQueue();
 	recQueue = createQueue();
-
 	List* availableWorkers = NULL;
 	availableWorkers = createList(false);
-
 	List* takenWorkers = NULL;
 	takenWorkers = createList(true);
 	if (queue == NULL || availableWorkers == NULL || recQueue == NULL || takenWorkers == NULL)
@@ -51,10 +49,11 @@ int main(int argc, char** argv)
 	dispatcherParams.recQueue = recQueue;
 	dispatcherParams.availableWorkers = availableWorkers;
 	dispatcherParams.takenWorkers = takenWorkers;
+	dispatcherParams.done = false;
 
 	ResponseParameters responseParams;
 	responseParams.queue = recQueue;
-
+	responseParams.done = false;
 	DWORD dispatcherThreadId, responseThreadId;
 	HANDLE dispatch, response;
 
@@ -89,7 +88,6 @@ int main(int argc, char** argv)
 			WSACleanup();
 			return 1;
 		}
-		unsigned long int nonBlockingMode = 1;
 		iResult = ioctlsocket(clientSockets[lastIndex], FIONBIO, &nonBlockingMode);
 
 		if (iResult == SOCKET_ERROR)
@@ -108,19 +106,27 @@ int main(int argc, char** argv)
 
 		CloseHandle(hReceive);
 
-		// here is where server shutdown loguc could be placed
-	} while (numberOfClients > 0);
+		printf("\nPress 'x' to exit or any other key to continue: \n");
+		if (_getch() == 'x')
+			break;
+	} while (1);
 
 	closesocket(listenSocket);
+	dispatcherParams.done = true;
+	responseParams.done = true;
+
+	CloseHandle(dispatch);
+	CloseHandle(response);
+
 	deleteQueue(queue);
 	deleteQueue(recQueue);
 	deleteList(availableWorkers);
 	deleteList(takenWorkers);
-	CloseHandle(dispatch);
-	CloseHandle(response);
+
 	WSACleanup();
 
 	getchar();
+	return 0;
 }
 
 DWORD WINAPI receiveMessageFromClient(LPVOID param) {
@@ -158,10 +164,9 @@ DWORD WINAPI receiveMessageFromClient(LPVOID param) {
 				clientSockets[j] = clientSockets[j + 1];
 			}
 			clientSockets[lastIndex - 1] = 0;
-
 			lastIndex--;
-
 			closesocket(clientSocket);
+			break;
 		}
 		else
 		{
@@ -178,8 +183,8 @@ DWORD WINAPI receiveMessageFromClient(LPVOID param) {
 				clientSockets[i] = clientSockets[i + 1];
 			}
 			clientSockets[lastIndex - 1] = 0;
-
 			lastIndex--;
+			break;
 		}
 	} while (iResult > 0);
 

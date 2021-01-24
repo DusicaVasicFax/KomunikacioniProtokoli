@@ -17,7 +17,7 @@ DWORD WINAPI dispatcher(LPVOID param) {
 	List* availableWorkers = parameters->availableWorkers;
 	List* takenWorkers = parameters->takenWorkers;
 
-	while (1) {
+	while (!parameters->done) {
 		if (isEmpty(queue) == true)
 		{
 			/*puts("Queue je prazan!");*/
@@ -73,9 +73,13 @@ DWORD WINAPI dispatcher(LPVOID param) {
 
 			CloseHandle(worker);
 			CloseHandle(receive);
+			//free(receiveParams);
+			//free(current);
+			//free(node);
 		}
 		Sleep(1000);
 	}
+	return 0;
 }
 
 DWORD WINAPI workerRole(LPVOID param)
@@ -157,6 +161,7 @@ DWORD WINAPI receiveThread(LPVOID param) {
 		}
 		else
 			printf("Added to response queue\n");
+
 	}
 	else if (iResult == 0)
 	{
@@ -171,14 +176,10 @@ DWORD WINAPI receiveThread(LPVOID param) {
 		closesocket(acceptedSocket);
 	}
 
-	Node* current = (Node*)malloc(sizeof(Node));
-	current = parameters->takenWorkers->head;
-
 	closesocket(listenSocket);
 	//TODO delete should be done with search just to be sure
 	pushToBeginning(parameters->availableWorkers, parameters->currentReceive->listeningPort, parameters->currentReceive->id);
-	deleteFirstNodeFromList(parameters->takenWorkers, current->id);
-	//free(parameters->currentReceive);
+	deleteFirstNodeFromList(parameters->takenWorkers, parameters->takenWorkers->head->id);
 	printf("recive thread finished\n");
 	return 0;
 }
@@ -187,7 +188,7 @@ DWORD WINAPI respondToClient(LPVOID param)
 {
 	ResponseParameters* parameters = (ResponseParameters*)param;
 
-	while (1) {
+	while (!parameters->done) {
 		if (isEmpty(parameters->queue) == true)
 		{
 			//puts("Queue je prazan!");

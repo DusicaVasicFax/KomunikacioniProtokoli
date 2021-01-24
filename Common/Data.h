@@ -56,11 +56,13 @@ typedef struct _DispatcherParameters {
 	Queue* recQueue;
 	List* availableWorkers;
 	List* takenWorkers;
+	bool done;
 }DispatcherParameters;
 
 typedef struct _ResponseParameters {
 	SOCKET* clientSocket;
 	Queue* queue;
+	bool done;
 }ResponseParameters;
 
 typedef struct _ClientReceiveMessageParameters {
