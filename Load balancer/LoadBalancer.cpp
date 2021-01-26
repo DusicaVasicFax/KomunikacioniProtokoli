@@ -43,21 +43,21 @@ int main(int argc, char** argv)
 		return 1;
 	}
 
-	DispatcherParameters dispatcherParams;
-	dispatcherParams.queue = queue;
-	dispatcherParams.recQueue = recQueue;
-	dispatcherParams.availableWorkers = availableWorkers;
-	dispatcherParams.takenWorkers = takenWorkers;
-	dispatcherParams.done = false;
+	DispatcherParameters* dispatcherParams = (DispatcherParameters*)malloc(sizeof(DispatcherParameters));
+	dispatcherParams->queue = queue;
+	dispatcherParams->recQueue = recQueue;
+	dispatcherParams->availableWorkers = availableWorkers;
+	dispatcherParams->takenWorkers = takenWorkers;
+	dispatcherParams->done = false;
 
-	ResponseParameters responseParams;
-	responseParams.queue = recQueue;
-	responseParams.done = false;
+	ResponseParameters* responseParams = (ResponseParameters*)malloc(sizeof(ResponseParameters));
+	responseParams->queue = recQueue;
+	responseParams->done = false;
 	DWORD dispatcherThreadId, responseThreadId;
 	HANDLE dispatch, response;
 
-	dispatch = CreateThread(NULL, 0, &dispatcher, &dispatcherParams, 0, &dispatcherThreadId);
-	response = CreateThread(NULL, 0, &respondToClient, &responseParams, 0, &responseThreadId);
+	dispatch = CreateThread(NULL, 0, &dispatcher, dispatcherParams, 0, &dispatcherThreadId);
+	response = CreateThread(NULL, 0, &respondToClient, responseParams, 0, &responseThreadId);
 
 	SOCKET listenSocket = CreateSocketServer((char*)SERVER_PORT, 1);
 	iResult = listen(listenSocket, SOMAXCONN);
@@ -107,8 +107,8 @@ int main(int argc, char** argv)
 	} while (1);
 
 	closesocket(listenSocket);
-	dispatcherParams.done = true;
-	responseParams.done = true;
+	dispatcherParams->done = true;
+	responseParams->done = true;
 
 	CloseHandle(dispatch);
 	CloseHandle(response);
@@ -117,7 +117,8 @@ int main(int argc, char** argv)
 	deleteQueue(recQueue);
 	deleteList(availableWorkers);
 	deleteList(takenWorkers);
-
+	free(dispatcherParams);
+	free(responseParams);
 	WSACleanup();
 
 	getchar();
