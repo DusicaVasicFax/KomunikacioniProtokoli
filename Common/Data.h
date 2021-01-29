@@ -40,7 +40,6 @@ typedef struct _WorkerRoleData
 	char* requestMeasurmentId;
 	char* port;
 	int id;
-	//Node* currentWorker;
 }WorkerRoleData;
 
 typedef struct _ReceiveThreadParams
