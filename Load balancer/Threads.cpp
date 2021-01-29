@@ -50,9 +50,10 @@ DWORD WINAPI dispatcher(LPVOID param) {
 
 			deleteFirstNodeFromList(availableWorkers, current->id);
 
-			WorkerRoleData data;
-			data.requestMeasurmentId = node->message; //poruka
-			data.currentWorker = current;
+			WorkerRoleData* data = (WorkerRoleData*)malloc(sizeof(WorkerRoleData));
+			data->requestMeasurmentId = node->message; //poruka
+			data->port = current->listeningPort;
+			data->id = current->id;
 
 #pragma endregion
 
@@ -69,13 +70,13 @@ DWORD WINAPI dispatcher(LPVOID param) {
 			receive = CreateThread(NULL, 0, &receiveThread, receiveParams, 0, &receiverThreadId);
 
 			DWORD workerRole1Id;
-			worker = CreateThread(NULL, 0, &workerRole, &data, 0, &workerRole1Id);
+			worker = CreateThread(NULL, 0, &workerRole, data, 0, &workerRole1Id);
 
 			CloseHandle(worker);
 			CloseHandle(receive);
 			//free(receiveParams);
 			//free(current);
-			//free(node);
+			free(node);
 		}
 		Sleep(1000);
 	}
@@ -87,9 +88,9 @@ DWORD WINAPI workerRole(LPVOID param)
 {
 	WorkerRoleData* parameters = (WorkerRoleData*)param;
 
-	SOCKET connectSocket = CreateSocketClient((char*)"127.0.0.1", atoi(parameters->currentWorker->listeningPort), 0);
+	SOCKET connectSocket = CreateSocketClient((char*)"127.0.0.1", atoi(parameters->port), 0);
 	//TODO do we need a check if this socket is created correctly ?
-	printf("Worker with id: %d started successfully\n", parameters->currentWorker->id);
+	printf("Worker with id: %d started successfully\n", parameters->id);
 
 	int iResult;
 	srand(time(0));
@@ -110,7 +111,9 @@ DWORD WINAPI workerRole(LPVOID param)
 		return 1;
 	}
 	closesocket(connectSocket);
-
+	free(parameters);
+	free(processedData);
+	free(message);
 	printf("Worker should close\n");
 	return 0;
 }
@@ -162,6 +165,7 @@ DWORD WINAPI receiveThread(LPVOID param) {
 		}
 		else
 			printf("Added to response queue\n");
+		//free(newNode);
 	}
 	else if (iResult == 0)
 	{
@@ -180,6 +184,9 @@ DWORD WINAPI receiveThread(LPVOID param) {
 	//TODO delete should be done with search just to be sure
 	pushToBeginning(parameters->availableWorkers, parameters->currentReceive->listeningPort, parameters->currentReceive->id);
 	deleteFirstNodeFromList(parameters->takenWorkers, parameters->takenWorkers->head->id);
+	free(parameters->currentReceive);
+	free(parameters);
+	free(recvbuf);
 	printf("recive thread finished\n");
 	return 0;
 }
@@ -207,7 +214,8 @@ DWORD WINAPI respondToClient(LPVOID param)
 			SOCKET connectSocket = *(node->socket);
 			// variable used to store function return value
 			int iResult;
-			iResult = send(connectSocket, Serialize(node->data), MESSAGE_SIZE, 0);
+			char* message = Serialize(node->data);
+			iResult = send(connectSocket, message, MESSAGE_SIZE, 0);
 
 			if (iResult == SOCKET_ERROR)
 			{
@@ -216,6 +224,8 @@ DWORD WINAPI respondToClient(LPVOID param)
 				//WSACleanup();
 				return 1;
 			}
+			free(message);
+			free(node);
 		}
 	}
 

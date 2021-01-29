@@ -120,7 +120,7 @@ int main(int argc, char** argv)
 	free(dispatcherParams);
 	free(responseParams);
 	WSACleanup();
-
+	printf("Press a key to exit...");
 	getchar();
 	return 0;
 }
@@ -168,8 +168,8 @@ DWORD WINAPI receiveMessageFromClient(LPVOID param) {
 			closesocket(clientSocket);
 			break;
 		}
+		free(recvbuf);
 	} while (iResult > 0);
-
 	numberOfClients--;
 	return 0;
 }
